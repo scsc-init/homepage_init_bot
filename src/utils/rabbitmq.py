@@ -8,13 +8,10 @@ from src.core import get_settings
 
 
 async def consume_rabbitmq(connector: DiscordBotConnector):
-    print("[BOT] Connecting to RabbitMQ...")
     rabbitmq_hostname = get_settings().rabbitmq_host
     connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
     channel = await connection.channel()
-    print("[BOT] Declaring bot_queue...")
     queue = await channel.declare_queue("bot_queue", durable=True)
-    print("[BOT] Waiting for messages on bot_queue...")
 
     async with queue.iterator() as queue_iter:
         async for message in queue_iter:
