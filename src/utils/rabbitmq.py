@@ -4,11 +4,13 @@ import aio_pika
 
 from src.utils.dispatcher import dispatch
 from src.bot.discord import DiscordBotConnector
+from src.core import get_settings
 
 
 async def consume_rabbitmq(connector: DiscordBotConnector):
     print("[BOT] Connecting to RabbitMQ...")
-    connection = await aio_pika.connect_robust("amqp://guest:guest@rabbitmq/")
+    rabbitmq_hostname = get_settings().rabbitmq_host
+    connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
     channel = await connection.channel()
     print("[BOT] Declaring bot_queue...")
     queue = await channel.declare_queue("bot_queue", durable=True)
@@ -25,7 +27,7 @@ async def consume_rabbitmq(connector: DiscordBotConnector):
 
                 try:
                     handler = dispatch(action_code)
-                    result = await handler(connector)
+                    result = await handler(connector, body)
                     if reply_to:
                         print(result)
                         await channel.default_exchange.publish(
@@ -35,5 +37,4 @@ async def consume_rabbitmq(connector: DiscordBotConnector):
                             ),
                             routing_key=reply_to
                         )
-                except Exception as e:
-                    print(f"Error handling message: {e}")
+                except Exception as e: print(f"Error: {e}")

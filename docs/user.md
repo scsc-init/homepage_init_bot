@@ -9,10 +9,8 @@
 ```json
 {
   "action_code": 2001,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
-    "id": "userid",
+    "user_id": "userid",
     "role_name": "role_name", 
   }
 }
@@ -25,10 +23,8 @@
 ```json
 {
   "action_code": 2002,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
-    "id": "userid",
+    "user_id": "userid",
     "role_name": "role_name", 
   }
 }
@@ -67,8 +63,6 @@
 ```json
 {
   "action_code": 2004,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
     "id_list": ["id1", "id2"],
     "role_name": "role_name",

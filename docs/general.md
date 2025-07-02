@@ -9,8 +9,6 @@
 ```json
 {
   "action_code": 1001,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
 }
 ```
 
@@ -32,8 +30,6 @@
 ```json
 {
   "action_code": 1002,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
     "id": "asdfasdf",
     "content": "message",
