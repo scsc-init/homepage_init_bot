@@ -3,11 +3,11 @@ import aio_pika
 
 
 from src.utils.dispatcher import dispatch
-from src.bot.discord import DiscordBotConnector
+from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
 
 
-async def consume_rabbitmq(connector: DiscordBotConnector):
+async def consume_rabbitmq(connector: SCSCBotConnector):
     rabbitmq_hostname = get_settings().rabbitmq_host
     connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
     channel = await connection.channel()

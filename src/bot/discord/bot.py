@@ -7,7 +7,7 @@ from typing import Optional, Iterable
 
 import asyncio
 
-class SCSCBot(commands.Bot):
+class DiscordBot(commands.Bot):
     def __init__(self, data: dict = None, connectors: Optional[Iterable] = None, **kwargs):
         super().__init__(**kwargs)
         self.data = data

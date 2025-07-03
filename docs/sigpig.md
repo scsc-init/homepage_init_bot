@@ -2,7 +2,7 @@
 
 ## AQMP Request Format (JSON)
 
-### 카테고리 생성
+### 시그 카테고리 갱신
 
 #### Main -> Bot
 
@@ -15,7 +15,7 @@
 }
 ```
 
-### 카테고리 수정(id)
+### 시그 아카이브 카테고리 갱신
 
 #### Main -> Bot
 
@@ -23,8 +23,7 @@
 {
   "action_code": 3002,
   "body": {
-    "id": 12345,
-    "name": "new_category_name"
+    "name": "category_name"
   }
 }
 ```
