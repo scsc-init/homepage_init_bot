@@ -9,6 +9,8 @@
 ```json
 {
   "action_code": 1001,
+  "correlation_id": "asdf",
+  "reply_to": "main_response_queue",
 }
 ```
 
@@ -56,8 +58,6 @@
 ```json
 {
   "action_code": 1003,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
     "name": "sig1",
     "content": "message",
