@@ -10,7 +10,7 @@
 {
   "action_code": 2001,
   "body": {
-    "user_id": "userid",
+    "user_id": 12345,
     "role_name": "role_name", 
   }
 }
@@ -24,7 +24,7 @@
 {
   "action_code": 2002,
   "body": {
-    "user_id": "userid",
+    "user_id": 12345,
     "role_name": "role_name", 
   }
 }
@@ -51,7 +51,7 @@
 {
   "correlation_id": "asdf",
   "result": {
-    "id_list": ["id1", "id2"],
+    "id_list": [12345, 12346],
   }
 }
 ```
@@ -64,7 +64,7 @@
 {
   "action_code": 2004,
   "body": {
-    "id_list": ["id1", "id2"],
+    "id_list": [12345, 12346],
     "role_name": "role_name",
   }
 }

@@ -23,7 +23,7 @@
 {
   "action_code": 3002,
   "body": {
-    "id": "id",
+    "id": 12345,
     "name": "new_category_name"
   }
 }
@@ -51,7 +51,7 @@
 {
     "correlation_id": "asdf",
     "result": {
-        "id": "id_category1",
+        "id": 12345,
     },
 }
 ```
@@ -65,7 +65,7 @@
 {
   "action_code": 3004,
   "body": {
-    "category_id": "id",
+    "category_id": 12345,
     "channel_name": "name",
   }
 }
@@ -79,8 +79,8 @@
 {
   "action_code": 3005,
   "body": {
-    "channel_id": "id1",
-    "category_to_id": "id2",
+    "channel_id": 12345,
+    "category_to_id": 12345,
     "new_channel_name": "name",
   }
 }

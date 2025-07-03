@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     rabbitmq_host: str
+    discord_receive_queue: str
     token: str
     command_prefix: str
 

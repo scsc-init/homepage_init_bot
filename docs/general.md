@@ -33,7 +33,7 @@
 {
   "action_code": 1002,
   "body": {
-    "id": "asdfasdf",
+    "id": 12345,
     "content": "message",
     "embed": {
       "title": "Hello!",
