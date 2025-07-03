@@ -21,7 +21,7 @@
 
 ```json
 {
-  "action_code": 3001,
+  "action_code": 3002,
   "body": {
     "id": "id",
     "name": "new_category_name"
@@ -36,7 +36,7 @@
 
 ```json
 {
-  "action_code": 3002,
+  "action_code": 3003,
   "correlation_id": "asdf",
   "reply_to": "main_response_queue",
   "body": {
@@ -63,7 +63,7 @@
 
 ```json
 {
-  "action_code": 3003,
+  "action_code": 3004,
   "body": {
     "category_id": "id",
     "channel_name": "name",
@@ -77,7 +77,7 @@
 
 ```json
 {
-  "action_code": 3004,
+  "action_code": 3005,
   "body": {
     "channel_id": "id1",
     "category_to_id": "id2",
