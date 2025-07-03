@@ -1,5 +1,7 @@
 from src.controller import create_invite, send_message_by_id, send_message_by_name, get_id_from_name
 from src.controller import give_role_to_id, remove_role_from_id, get_ids_from_name, create_role_with_ids
+from src.controller import create_category, edit_category, get_category_from_name, create_channel, move_channel
+from src.controller import create_sig, archive_sig
 
 _ACTION_MAP = {
     1001: create_invite,
@@ -10,6 +12,13 @@ _ACTION_MAP = {
     2002: remove_role_from_id,
     2003: get_ids_from_name,
     2004: create_role_with_ids,
+    3001: create_category,
+    3002: edit_category,
+    3003: get_category_from_name,
+    3004: create_channel,
+    3005: move_channel,
+    4001: create_sig,
+    4002: archive_sig
 }
 
 def dispatch(action_code: int):

@@ -1,15 +1,17 @@
 from src.bot.discord import DiscordBotConnector
 
-async def edit_category(connector: DiscordBotConnector, body: dict):
-    invite = connector.create_invite()
-    return {"invite_url": str(invite)}
+async def create_category(connector: DiscordBotConnector, body: dict):
+    connector.create_category(body['name'])
 
-async def send_message_by_id(connector: DiscordBotConnector, body: dict):
-    connector.send_message(body['id'], body['content'])
+async def edit_category(connector: DiscordBotConnector, body: dict):
+    pass
+
+async def get_category_from_name(connector: DiscordBotConnector, body: dict):
+    category = connector.get_category(body['name'])
+    if category: return {'id': category.id}
     
-async def send_message_by_name(connector: DiscordBotConnector, body: dict):
-    connector.send_message(body['name'], body['content'])
+async def create_channel(connector: DiscordBotConnector, body: dict):
+    connector.create_text_channel(body['channel_name'], body['category_id'])
     
-async def get_id_from_name(connector: DiscordBotConnector, body: dict):
-    channel = connector.get_channel(body['name'])
-    if channel: return channel.id
+async def move_channel(connector: DiscordBotConnector, body: dict):
+    connector.edit_text_channel(body['channel_id'], name=body['new_channel_name'], category_identifier=body['category_to_id'])

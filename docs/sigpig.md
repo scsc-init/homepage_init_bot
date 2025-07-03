@@ -1,6 +1,19 @@
-# general
+# sigpig
 
 ## AQMP Request Format (JSON)
+
+### 카테고리 생성
+
+#### Main -> Bot
+
+```json
+{
+  "action_code": 3001,
+  "body": {
+    "name": "category_name"
+  }
+}
+```
 
 ### 카테고리 수정(id)
 
@@ -10,6 +23,7 @@
 {
   "action_code": 3001,
   "body": {
+    "id": "id",
     "name": "new_category_name"
   }
 }

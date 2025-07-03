@@ -9,8 +9,6 @@
 ```json
 {
   "action_code": 4001,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
     "sig_name": "sig_name",
     "id_list": ["id1", ]
@@ -26,8 +24,6 @@
 ```json
 {
   "action_code": 4002,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
     "sig_name": "sig_name",
   }
