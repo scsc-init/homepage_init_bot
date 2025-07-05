@@ -9,8 +9,8 @@ async def remove_role_from_id(connector: SCSCBotConnector, body: dict):
     if role: connector.remove_role(body['user_id'], role)
     
 async def get_ids_from_name(connector: SCSCBotConnector, body: dict):
-    return {"id_list": [member.id for member in connector.get_members(body['name'])]}
+    return {"user_id_list": [member.id for member in connector.get_members(body['name'])]}
 
 async def create_role_with_ids(connector: SCSCBotConnector, body: dict):
-    connector.create_role(body['role_name', body['id_list']])
+    connector.create_role(body['role_name'], body['id_list'])
     

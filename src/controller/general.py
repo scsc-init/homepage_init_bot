@@ -5,12 +5,12 @@ async def create_invite(connector: SCSCBotConnector, body: dict):
     return {"invite_url": str(invite)}
 
 async def send_message_by_id(connector: SCSCBotConnector, body: dict):
-    connector.send_message(body['id'], body['content'])
+    connector.send_message(body['channel_id'], body['content'])
     
 async def send_message_by_name(connector: SCSCBotConnector, body: dict):
-    connector.send_message(body['name'], body['content'])
+    connector.send_message(body['channel_name'], body['content'])
     
 async def get_id_from_name(connector: SCSCBotConnector, body: dict):
-    channel = connector.get_channel(body['name'])
-    if channel: return channel.id
+    channel = connector.get_channel(body['channel_name'])
+    if channel: return {"channel_id": channel.id}
     

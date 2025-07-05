@@ -40,7 +40,7 @@
   "correlation_id": "asdf",
   "reply_to": "main_response_queue",
   "body": {
-    "name": "name",
+    "user_name": "name",
   }
 }
 ```
@@ -51,7 +51,7 @@
 {
   "correlation_id": "asdf",
   "result": {
-    "id_list": [12345, 12346],
+    "user_id_list": [12345, 12346],
   }
 }
 ```
@@ -64,7 +64,7 @@
 {
   "action_code": 2004,
   "body": {
-    "id_list": [12345, 12346],
+    "user_id_list": [12345, 12346],
     "role_name": "role_name",
   }
 }

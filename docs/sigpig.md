@@ -10,7 +10,7 @@
 {
   "action_code": 3001,
   "body": {
-    "name": "category_name"
+    "category_name": "category_name"
   }
 }
 ```
@@ -23,7 +23,7 @@
 {
   "action_code": 3002,
   "body": {
-    "name": "category_name"
+    "category_name": "category_name"
   }
 }
 ```
@@ -39,7 +39,7 @@
   "correlation_id": "asdf",
   "reply_to": "main_response_queue",
   "body": {
-    "name": "category_name",
+    "category_name": "category_name",
   }
 }
 ```
@@ -50,7 +50,7 @@
 {
     "correlation_id": "asdf",
     "result": {
-        "id": 12345,
+        "category_id": 12345,
     },
 }
 ```

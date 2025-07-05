@@ -11,7 +11,7 @@
   "action_code": 4001,
   "body": {
     "sig_name": "sig_name",
-    "id_list": ["id1", "id2"]
+    "user_id_list": [12345, 12346]
   }
 }
 ```
