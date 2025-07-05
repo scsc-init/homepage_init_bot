@@ -15,4 +15,3 @@ async def create_channel(connector: SCSCBotConnector, body: dict):
     
 async def move_channel(connector: SCSCBotConnector, body: dict):
     connector.edit_text_channel(body['channel_id'], name=body['new_channel_name'], category_identifier=body['category_to_id'])
-    

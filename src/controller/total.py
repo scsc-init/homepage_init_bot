@@ -5,4 +5,3 @@ async def create_sig(connector: SCSCBotConnector, body: dict):
     
 async def archive_sig(connector: SCSCBotConnector, body: dict):
     connector.archive_sig(body['sig_name'])
-    

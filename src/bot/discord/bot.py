@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 import pathlib
 import json
@@ -19,6 +20,19 @@ class DiscordBot(commands.Bot):
     async def setup_hook(self):
         for path in pathlib.Path("cogs").glob("*.py"):
             await self.load_extension("cogs." + path.stem)
+        
+        @app_commands.command(name="enroll", description="Enrolls the user to the discord server")
+        @app_commands.describe(student_id="학번(ex. 202500001)")
+        async def enroll(interaction: discord.Interaction, student_id: int):
+            user = interaction.user
+            try:
+                for connector in self.connectors:
+                    for listener in connector.enroll_event_listeners:
+                        res = await listener(connector, student_id, user.id, user.name)
+                        await interaction.response.send_message(f"{res}")
+            except Exception as e:
+                await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+        self.tree.add_command(enroll)
         await self.tree.sync()
 
     async def on_ready(self):
@@ -49,3 +63,6 @@ class DiscordBot(commands.Bot):
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         return await super().start(token, reconnect=reconnect)
+    
+
+        

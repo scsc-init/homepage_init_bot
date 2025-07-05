@@ -13,4 +13,3 @@ async def get_ids_from_name(connector: SCSCBotConnector, body: dict):
 
 async def create_role_with_ids(connector: SCSCBotConnector, body: dict):
     connector.create_role(body['role_name'], body['id_list'])
-    

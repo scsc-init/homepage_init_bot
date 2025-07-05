@@ -117,6 +117,7 @@ class SCSCBotConnector:
         self.debug = debug
         self.defaultReason = self.bot.data["defaultReason"]
         self.previousSemester = self.bot.data["previousSemester"]
+        self.enroll_event_listeners = []
         self.bot.connectors.append(self)
 
     def update_attributes(self):
