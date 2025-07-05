@@ -9,6 +9,8 @@
 ```json
 {
   "action_code": 1001,
+  "correlation_id": "asdf",
+  "reply_to": "main_response_queue",
 }
 ```
 
@@ -31,7 +33,7 @@
 {
   "action_code": 1002,
   "body": {
-    "id": "asdfasdf",
+    "channel_id": 12345,
     "content": "message",
     "embed": {
       "title": "Hello!",
@@ -56,10 +58,8 @@
 ```json
 {
   "action_code": 1003,
-  "correlation_id": "asdf",
-  "reply_to": "main_response_queue",
   "body": {
-    "name": "sig1",
+    "channel_name": "sig1",
     "content": "message",
     "embed": {
       "title": "Hello!",
@@ -87,7 +87,7 @@
   "correlation_id": "asdf",
   "reply_to": "main_response_queue",
   "body": {
-    "name": "sig1",
+    "channel_name": "sig1",
   }
 }
 ```
@@ -98,7 +98,7 @@
 {
     "correlation_id": "asdf",
     "result": {
-        "id": "id_sig1",
+        "channel_id": 12345,
     },
 }
 ```
