@@ -1,13 +1,24 @@
 import asyncio
+from threading import Thread
+import uvicorn
+
 from src.utils import consume_rabbitmq
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
+from src.utils import fastapi_app, enroll_user, login
+            
 
-async def enroll_user(connector: SCSCBotConnector, student_id: int, user_id: int, user_name: str):
-    return f'{user_id}, {user_name}, {student_id}'
+def run_fastapi(): uvicorn.run(fastapi_app, host='0.0.0.0', port=8081)
 
 async def start_all():
+    fastapi_thread = Thread(target=run_fastapi, daemon=True)
+    fastapi_thread.start()
+    
     connector = SCSCBotConnector(command_prefix=get_settings().command_prefix, debug=True)
+    try:
+        await login()
+    except :
+        pass
     connector.enroll_event_listeners.append(enroll_user)
     connector.start(get_settings().token)
 
@@ -17,6 +28,7 @@ async def start_all():
     await consume_rabbitmq(connector)
 
     
+
     
 if __name__ == "__main__":
     asyncio.run(start_all())
