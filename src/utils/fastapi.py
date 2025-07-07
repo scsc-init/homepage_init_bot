@@ -18,7 +18,7 @@ async def status():
         else: return {"logged_in": True}
             
 
-@app.post("/login", status_code=201)
+@app.post("/login", status_code=204)
 async def login():
     async with httpx.AsyncClient() as client:
         res = await client.post(f"http://{get_settings().main_backend_host}:8080/api/user/login", headers={"x-api-secret": get_settings().api_secret}, json={"email": "bot@discord.com"})

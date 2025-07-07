@@ -64,4 +64,3 @@ dependencies:
       - typing-inspection==0.4.1
       - uvicorn==0.35.0
       - yarl==1.20.1
-prefix: /home/initial/miniconda3/envs/scsc_init_bot

@@ -26,7 +26,7 @@
 
 
 - **Status Codes**:
-  - `201 Created`: 요청 성공
+  - `204 No Content`: 요청 성공
   - `400 Bad Request`: 오류 반환
   
 ---

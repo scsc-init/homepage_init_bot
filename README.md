@@ -12,17 +12,21 @@ check `/docs`
 
 ```env
 RABBITMQ_HOST="rabbitmq"
+MAIN_BACKEND_HOST="backend"
 DISCORD_RECEIVE_QUEUE="discord_bot_queue"
 TOKEN="..."
 COMMAND_PREFIX="!"
+API_SECRET="some-secret-code"
 ```
 
 | Key Name             | Description                                                      |
 |----------------------|------------------------------------------------------------------|
 | `RABBITMQ_HOST`          | RabbitMQ가 돌아가는 호스트명. docker의 경우 container 이름과 동일. 메인 BE의 환경 변수명과 동일해야 함. |
+| `MAIN_BACKEND_HOST`      | MainBE가 돌아가는 호스트명. docker의 경우 container 이름과 동일. 메인 BE의 환경 변수명과 동일해야 함.  |
 | `DISCORD_RECEIVE_QUEUE`  | 메인 서버에서 요청을 받는 큐의 명칭. 메인 BE의 환경 변수명과 동일해야 함. |
 | `TOKEN`                  | 디스코드 봇의 토큰. 디스코드 개발자 사이트 참고. |
 | `COMMAND_PREFIX`         | 봇의 커맨드 호출자. 현재는 slashcommand로 구현되어 있으므로 불필요. |
+| `API_SECRET`             | API 요청 시 검증에 사용되는 비밀 코드. 메인 BE의 환경 변수명과 동일해야 함. |
 
 ## Developer Dependencies
 
