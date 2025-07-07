@@ -1,147 +1,63 @@
 # homepage_init_bot
 
-| 최신 개정일: 2025.7.3
-
-## features & action code
-
-### general (1000)
-
-|feature(기능)|action code|
-|:-----------:|:---------:|
-| 초대 코드 생성 | 1001 |
-| 문자열을 특정 채널(id)에 전송 | 1002 |
-| 문자열을 특정 채널(name)에 전송 | 1003 |
-| 채널 name으로 id 검색 | 1004 |
-
-### user (2000)
-
-|feature(기능)|action code|
-|:-----------:|:---------:|
-| 특정인(id)에게 역할(name) 부여 | 2001 |
-| 특정인(id)에게 역할(name) 제거 | 2002 |
-| 특정인(name) 으로 특정인(id) 구하기. 반환값 = 리스트 | 2003 |
-| 특정인들(id[]) 으로 역할(name) 생성 | 2004 |
-
-### sigpig (3000) - in progress
-
-|feature(기능)|action code|
-|:-----------:|:---------:|
-| 시그 카테고리 변경(id) | 3001 |
-| 아카이브 카테고리 변경(id) | 3002 |
-| 카테고리 조회 (name-id) | 3003 |
-| 채널 생성 (카테고리 id, 채널 name) | 3005 |
-| 채널 이동 (채널 id, 이동할 카테고리, 이동 후 채널 이름) | 3006 |
-
-### total (4000) - in progress
-
-|feature(기능)|action code|
-|:-----------:|:---------:|
-| 시그 생성(id[], name) (채널 생성, 특정인들 역할 생성) | 4001 |
-| 시그 아카이브(name) (채널 이동) | 4002 |
-
+> 최신 개정일: 2025.7.5
 
 ## AQMP Request Format (JSON)
 
 check `/docs`
 
-## How to Run(Backend MSA)
+## .env 파일 형식
 
-### File Structure
+.env 파일은 반드시 root에 위치해야 하며 아래 형식으로 작성합니다. 
 
-```
-/homepage_init_be_msa
-ㄴ/homepage_init_backend (cloned from github)
-ㄴ/homepage_init_bot (this repo, also cloned from github)
-ㄴ.env
-ㄴdocker-compose.yml
-```
-
-### `docker-compose.yml` contents
-
-the compose files from each of the repos are combined in the root directory of the MSA
-
-```yaml
-services:
-  backend:
-    build: ./homepage_init_backend
-    ports:
-      - "8080:8080"
-    env_file:
-      - ./homepage_init_backend/.env
-    volumes:
-      - ./homepage_init_backend:/app/
-    depends_on:
-      - rabbitmq
-    entrypoint: bash
-    command: >
-      -c '
-      echo "Checking DB at /app/${SQLITE_FILENAME}";
-
-      if [ ! -f "/app/${SQLITE_FILENAME}" ]; then
-        echo "Database was not found. Initializing...";
-        mkdir -p /app/db
-        chmod +x ./script/*.sh &&
-        ./script/init_db.sh "/app/${SQLITE_FILENAME}" &&
-        ./script/insert_scsc_global_status.sh "/app/${SQLITE_FILENAME}" &&
-        ./script/insert_user_roles.sh "/app/${SQLITE_FILENAME}" &&
-        ./script/insert_majors.sh "/app/${SQLITE_FILENAME}" ./docs/majors.csv &&
-        ./script/insert_boards.sh "/app/${SQLITE_FILENAME}" &&
-        ./script/insert_sample_users.sh "/app/${SQLITE_FILENAME}" &&
-        ./script/insert_sample_articles.sh "/app/${SQLITE_FILENAME}";
-      else
-        echo "Database already exists. Skipping initialization.";
-      fi;
-
-      exec fastapi run main.py --host 0.0.0.0 --port 8080
-      '
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  bot:
-    build: ./homepage_init_bot
-    env_file:
-      - ./homepage_init_bot/.env
-    volumes:
-      - ./homepage_init_bot:/app/
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-```
-
-### `.env` contents
-
-#### `./.env`
-
-```
-SQLITE_FILENAME="db/YOUR_DB_FILENAME.db"
-```
-
-#### `./homepage_init_backend/.env`
-
-same as original repo
-
-#### `./homepage_init_bot/.env`
-
-```
+```env
 RABBITMQ_HOST="rabbitmq"
-TOKEN="YOUR_BOT_TOKEN"
+MAIN_BACKEND_HOST="backend"
+DISCORD_RECEIVE_QUEUE="discord_bot_queue"
+TOKEN="..."
 COMMAND_PREFIX="!"
+API_SECRET="some-secret-code"
 ```
 
-### Running
+| Key Name             | Description                                                      |
+|----------------------|------------------------------------------------------------------|
+| `RABBITMQ_HOST`          | RabbitMQ가 돌아가는 호스트명. docker의 경우 container 이름과 동일. 메인 BE의 환경 변수명과 동일해야 함. |
+| `MAIN_BACKEND_HOST`      | MainBE가 돌아가는 호스트명. docker의 경우 container 이름과 동일. 메인 BE의 환경 변수명과 동일해야 함.  |
+| `DISCORD_RECEIVE_QUEUE`  | 메인 서버에서 요청을 받는 큐의 명칭. 메인 BE의 환경 변수명과 동일해야 함. |
+| `TOKEN`                  | 디스코드 봇의 토큰. 디스코드 개발자 사이트 참고. |
+| `COMMAND_PREFIX`         | 봇의 커맨드 호출자. 현재는 slashcommand로 구현되어 있으므로 불필요. |
+| `API_SECRET`             | API 요청 시 검증에 사용되는 비밀 코드. 메인 BE의 환경 변수명과 동일해야 함. |
 
-In the root directory,
+## Developer Dependencies
+
+`environment.yml`에서 conda로 환경 설치.
+
+## How to Run
+
+### 초기 봇 데이터 설정(data.json)과 Discord 내부 시스템
+
+봇 구동을 위한 주요 데이터는 `src/bot/discord/data/data.json`에 저장됩니다.
+
+`data_example.json`에 각 내용을 채운 후 파일명을 `data.json`으로 바꿔주세요.
+
+Discord의 object ID는 18여 자리의 정수입니다.  
+설정 - 앱 설정 - 고급에서 개발자 모드를 on으로 설정하고 각 object(유저, 역할, ...)을 오른쪽 클릭하면 ID를 복사할 수 있습니다.  
+카테고리에도 각각의 ID가 존재합니다. 
+
+Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy.readthedocs.io/en/stable/discord.html#discord-intro)를 참고하세요.
+
+### 실행
+In root directory,
 
 ```bash
 docker-compose up --build
+```
+
+For the whole MSA, check main repo.
+
+### 실행 후 로그
+
+```
+start() called with token='...'
+Logged in as Tester2(...)
 ```

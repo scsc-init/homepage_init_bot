@@ -1,7 +1,7 @@
 from discord import VoiceChannel, StageChannel, ForumChannel, TextChannel, CategoryChannel, Member
 from discord.abc import GuildChannel
 
-from .bot import SCSCBot
+from .bot import DiscordBot
 
 import json
 import discord
@@ -22,7 +22,7 @@ NOCHANGE = object()
 
 def log(func):
     """
-    DiscordBotConnector 클래스의 메서드 호출을 로깅하는 데코레이터.
+    SCSCBotConnector 클래스의 메서드 호출을 로깅하는 데코레이터.
     메서드 이름과 전달된 인자(self 제외)를 출력합니다.
     """
 
@@ -89,16 +89,16 @@ def log(func):
 
     return wrapper
 
-class DiscordBotConnector:
-    def __init__(self, bot: Optional[SCSCBot] = None, data_path: Optional[Path] = None, data: Optional[dict] = None, command_prefix: str = "!", debug: bool = False):
+class SCSCBotConnector:
+    def __init__(self, bot: Optional[DiscordBot] = None, data_path: Optional[Path] = None, data: Optional[dict] = None, command_prefix: str = "!", debug: bool = False):
         """
-        DiscordBotConnector의 생성자.
+        SCSCBotConnector의 생성자.
 
         Discord 봇과의 상호작용을 위한 연결을 설정하고,
         데이터를 로드하며, 봇 인스턴스를 초기화합니다.
 
         Args:
-            bot (Optional[SCSCBot]): 사용할 SCSCBot 인스턴스. 제공되지 않으면 새로 생성됩니다.
+            bot (Optional[DiscordBot]): 사용할 DiscordBot 인스턴스. 제공되지 않으면 새로 생성됩니다.
             data_path (Optional[Path]): 봇 데이터 파일 (data.json)의 경로. 기본값은 "data/data.json"입니다.
             data (Optional[dict]): 봇 초기화에 사용될 데이터 딕셔너리.
             command_prefix (str): 봇의 명령어 접두사. 기본값은 "!"입니다.
@@ -109,7 +109,7 @@ class DiscordBotConnector:
         with open(data_path or Path(__file__).parent / "data/data.json", "r", encoding="UTF-8") as f:
             data.update(json.load(f))
         if bot is None:
-            self.bot = SCSCBot(command_prefix=command_prefix, intents=discord.Intents.all(), data=data)
+            self.bot = DiscordBot(command_prefix=command_prefix, intents=discord.Intents.all(), data=data)
         else:
             self.bot = bot
             self.bot.data = data
@@ -117,6 +117,7 @@ class DiscordBotConnector:
         self.debug = debug
         self.defaultReason = self.bot.data["defaultReason"]
         self.previousSemester = self.bot.data["previousSemester"]
+        self.enroll_event_listeners = []
         self.bot.connectors.append(self)
 
     def update_attributes(self):
@@ -154,11 +155,20 @@ class DiscordBotConnector:
             TypeError: `coro`가 코루틴이 아닐 경우 발생합니다.
             Exception: 코루틴 실행 중 예외가 발생할 경우 해당 예외를 다시 발생시킵니다.
         """
+        def is_in_event_loop(loop):
+            try:
+                return asyncio.get_running_loop() == loop
+            except RuntimeError:
+                return False
+        if is_in_event_loop(self.bot.loop):
+            raise Exception("submit_sync called from within bot.loop")
         if not asyncio.iscoroutine(coro):
             raise TypeError("submit_sync expects a coroutine")
         try:
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
-            return future.result()
+            res = future.result()
+            print(1)
+            return res
         except Exception as e:
             print(f"[submit_sync Error] An error occurred: {e}")
             raise e
@@ -319,7 +329,9 @@ class DiscordBotConnector:
         """
         if identifier is None:
             identifier = self.mainChannel
-        return self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
+        res = self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
+        print(1)
+        return res
 
     @log
     def send_message(self, identifier: ChannelIdentifierType, content, embed: Optional[discord.Embed] = None, **kwargs):
@@ -351,21 +363,6 @@ class DiscordBotConnector:
         return self.submit_sync(self.mainGuild.create_text_channel(name, reason=reason or self.defaultReason, category=self.get_category(category_identifier), topic=topic))
 
     @log
-    def create_category(self, name: str, position: Optional[int] = None, reason: Optional[str] = None) -> discord.CategoryChannel:
-        """
-        새로운 카테고리 채널을 생성합니다.
-
-        Args:
-            name (str): 생성할 카테고리 채널의 이름.
-            position (Optional[int]): 카테고리의 위치.
-            reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
-
-        Returns:
-            discord.CategoryChannel: 생성된 카테고리 채널 객체.
-        """
-        return self.submit_sync(self.mainGuild.create_category_channel(name, position=position, reason=reason or self.defaultReason))
-
-    @log
     def edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
         """
         기존 텍스트 채널의 속성을 편집합니다.
@@ -387,6 +384,39 @@ class DiscordBotConnector:
             options["position"] = position
         options["reason"] = reason or self.defaultReason
         return self.submit_sync(self.get_channel(channel_identifier).edit(**options))
+
+    @log
+    def create_category(self, name: str, position: Optional[int] = None, reason: Optional[str] = None) -> discord.CategoryChannel:
+        """
+        새로운 카테고리 채널을 생성합니다.
+
+        Args:
+            name (str): 생성할 카테고리 채널의 이름.
+            position (Optional[int]): 카테고리의 위치.
+            reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
+
+        Returns:
+            discord.CategoryChannel: 생성된 카테고리 채널 객체.
+        """
+        return self.submit_sync(self.mainGuild.create_category_channel(name, position=position, reason=reason or self.defaultReason))
+
+    @log
+    def edit_category(self, identifier: CategoryIdentifierType, name: Optional[str] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
+        """
+        기존 카테고리 채널의 속성을 편집합니다.
+
+        Args:
+            identifier (CategoryIdentifierType): 편집할 카테고리 채널의 식별자.
+            name (Optional[str]): 카테고리의 새 이름. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
+            position (Optional[int]): 카테고리의 새 위치. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
+            reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
+        """
+        options = {}
+        if not name == NOCHANGE:
+            options["name"] = name
+        if not position == NOCHANGE:
+            options["position"] = position
+        return self.submit_sync(self.get_category(identifier).edit(**options, reason=reason or self.defaultReason))
 
     @log
     def create_role(self, name: str, members: Optional[Iterable[MemberIdentifierType]] = None, reason: Optional[str] = None) -> discord.Role:
@@ -505,3 +535,39 @@ class DiscordBotConnector:
             previous_semester = self.previousSemester
         role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
         return self.edit_text_channel(channel, category_identifier=self.sigArchiveCategory), role
+
+    @log
+    def update_sig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
+        """
+        SIG 카테고리를 업데이트합니다.
+        필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+
+        Args:
+            identifier (CategoryIdentifierType): SIG 카테고리의 ID, 이름 또는 카테고리 객체.
+            create (bool): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다.
+                           `False`인 경우, 기존 카테고리를 가져옵니다.
+
+        Returns:
+            discord.CategoryChannel: 업데이트되거나 생성된 카테고리 채널 객체.
+        """
+        category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
+        self.set_data({"sigCategoryID": category.id})
+        return category
+
+    @log
+    def update_sig_archive_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
+        """
+        SIG 아카이브 카테고리를 업데이트합니다.
+        필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+
+        Args:
+            identifier (CategoryIdentifierType): SIG 아카이브 카테고리의 ID, 이름 또는 카테고리 객체.
+            create (bool): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다.
+                           `False`인 경우, 기존 카테고리를 가져옵니다.
+
+        Returns:
+            discord.CategoryChannel: 업데이트되거나 생성된 카테고리 채널 객체.
+        """
+        category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
+        self.set_data({"sigArchiveCategoryID": category.id})
+        return category

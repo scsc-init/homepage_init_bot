@@ -1,2 +1,2 @@
-from .core import DiscordBotConnector
-from .bot import SCSCBot
+from .core import SCSCBotConnector
+from .bot import DiscordBot
