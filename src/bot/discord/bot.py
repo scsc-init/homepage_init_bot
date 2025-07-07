@@ -32,6 +32,7 @@ class DiscordBot(commands.Bot):
                         await interaction.response.send_message(f"{res}")
             except Exception as e:
                 await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+        
         self.tree.add_command(enroll)
         await self.tree.sync()
 

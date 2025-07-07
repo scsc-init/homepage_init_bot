@@ -1,6 +1,7 @@
 import json
 import aio_pika
-
+from aiormq.exceptions import AMQPConnectionError
+import asyncio
 
 from src.utils.dispatcher import dispatch
 from src.bot.discord import SCSCBotConnector
@@ -9,7 +10,13 @@ from src.core import get_settings
 
 async def consume_rabbitmq(connector: SCSCBotConnector):
     rabbitmq_hostname = get_settings().rabbitmq_host
-    connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
+    connection = None
+    while connection is None:
+        try:
+            connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
+        except AMQPConnectionError as e:
+            print(f"[RabbitMQ] Connection failed, retrying in 2 seconds... ({e})")
+            await asyncio.sleep(2)
     channel = await connection.channel()
     queue = await channel.declare_queue(get_settings().discord_receive_queue, durable=True)
 

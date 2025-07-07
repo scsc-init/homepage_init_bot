@@ -155,11 +155,20 @@ class SCSCBotConnector:
             TypeError: `coro`가 코루틴이 아닐 경우 발생합니다.
             Exception: 코루틴 실행 중 예외가 발생할 경우 해당 예외를 다시 발생시킵니다.
         """
+        def is_in_event_loop(loop):
+            try:
+                return asyncio.get_running_loop() == loop
+            except RuntimeError:
+                return False
+        if is_in_event_loop(self.bot.loop):
+            raise Exception("submit_sync called from within bot.loop")
         if not asyncio.iscoroutine(coro):
             raise TypeError("submit_sync expects a coroutine")
         try:
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
-            return future.result()
+            res = future.result()
+            print(1)
+            return res
         except Exception as e:
             print(f"[submit_sync Error] An error occurred: {e}")
             raise e
@@ -320,7 +329,9 @@ class SCSCBotConnector:
         """
         if identifier is None:
             identifier = self.mainChannel
-        return self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
+        res = self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
+        print(1)
+        return res
 
     @log
     def send_message(self, identifier: ChannelIdentifierType, content, embed: Optional[discord.Embed] = None, **kwargs):

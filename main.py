@@ -17,8 +17,8 @@ async def start_all():
     connector = SCSCBotConnector(command_prefix=get_settings().command_prefix, debug=True)
     try:
         await login()
-    except :
-        pass
+    except Exception as e:
+        print(f"Login failed with exception: {e}")
     connector.enroll_event_listeners.append(enroll_user)
     connector.start(get_settings().token)
 
