@@ -28,21 +28,46 @@ API_SECRET="some-secret-code"
 | `COMMAND_PREFIX`         | 봇의 커맨드 호출자. 현재는 slashcommand로 구현되어 있으므로 불필요. |
 | `API_SECRET`             | API 요청 시 검증에 사용되는 비밀 코드. 메인 BE의 환경 변수명과 동일해야 함. |
 
+## `data.json` 파일 형식
+`./src/bot/discord/data/data.json`에 디스코드 봇 구동을 위한 SCSC 디스코드 서버에 대한 필수 정보가 담겨 있습니다. 디스코드 봇이 명령에 따라 이 데이터를 업데이트하기도 합니다. 초기 설정 방식은 다음과 같습니다.
+```json
+{
+  "guildID": 0,
+  "channelID": 0,
+  "adminRoleID": 0,
+  "executiveRoleID": 0,
+  "sigCategoryID": 0,
+  "sigArchiveCategoryID": 0,
+  "pigCategoryID": 0,
+  "pigArchiveCategoryID": 0,
+  "defaultReason": "from SCSCBot",
+  "previousSemester": ""
+}
+```
+`data.example.json`의 내용을 수정 후 파일명을 `data.json`으로 바꿔주세요.
+
+| Key Name             | Description                                                      |
+|----------------------|------------------------------------------------------------------|
+| `guildID`                | 디스코드 서버의 ID |
+| `channelID`              | 새로운 사용자가 초대될 디스코드 서버의 메인 채널 ID(SCSC 서버의 경우 `chat`) |
+| `adminRoleID`            | 필요 없음. 0으로 고정. |
+| `executiveRoleID`        | 필요 없음. 0으로 고정. |
+| `sigCategoryID`          | 현재 시점에서 활성화되어 있는 시그 카테고리의 ID. |
+| `sigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 시그 카테고리의 ID. |
+| `pigCategoryID`          | 현재 시점에서 활성화되어 있는 피그 카테고리의 ID. |
+| `pigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 피그 카테고리의 ID. |
+| `defaultReason`          | 필요 없음. ''으로 고정. |
+| `previousSemester`       | 직전 학기의 이름(ex. 2025-1, 2025-S). 학기가 바뀐 후 API 통해 수동으로 업데이트 필요. |
+
+디스코드 UI에서 객체를 우클릭하고 `Copy xxx ID`를 누르면 오브젝트 ID를 얻을 수 있습니다.
+
 ## Developer Dependencies
 
 `environment.yml`에서 conda로 환경 설치.
 
 ## How to Run
 
-### 초기 봇 데이터 설정(data.json)과 Discord 내부 시스템
-
-봇 구동을 위한 주요 데이터는 `src/bot/discord/data/data.json`에 저장됩니다.
-
-`data_example.json`에 각 내용을 채운 후 파일명을 `data.json`으로 바꿔주세요.
-
-Discord의 object ID는 18여 자리의 정수입니다.  
-설정 - 앱 설정 - 고급에서 개발자 모드를 on으로 설정하고 각 object(유저, 역할, ...)을 오른쪽 클릭하면 ID를 복사할 수 있습니다.  
-카테고리에도 각각의 ID가 존재합니다. 
+### Discord 내부 시스템
 
 Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy.readthedocs.io/en/stable/discord.html#discord-intro)를 참고하세요.
 
