@@ -71,6 +71,8 @@ API_SECRET="some-secret-code"
 
 Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy.readthedocs.io/en/stable/discord.html#discord-intro)를 참고하세요.
 
+SCSC 디스코드 서버에서 `dormant`, `newcomer`, `member`, `oldboy`, `executive`, `president`와 같은 6가지 role을 각각의 권한에 맞게 추가합니다.
+
 ### 실행
 In root directory,
 

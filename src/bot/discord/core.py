@@ -169,7 +169,6 @@ class SCSCBotConnector:
         try:
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
             res = future.result()
-            print(1)
             return res
         except Exception as e:
             print(f"[submit_sync Error] An error occurred: {e}")
@@ -332,7 +331,6 @@ class SCSCBotConnector:
         if identifier is None:
             identifier = self.mainChannel
         res = self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
-        print(1)
         return res
 
     @log

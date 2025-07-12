@@ -29,7 +29,7 @@ class DiscordBot(commands.Bot):
                 for connector in self.connectors:
                     for listener in connector.enroll_event_listeners:
                         res = await listener(connector, student_id, user.id, user.name)
-                        await interaction.response.send_message(f"{res}")
+                        await interaction.response.send_message(f"{res}", ephemeral=True)
             except Exception as e:
                 await interaction.response.send_message(f"Error: {e}", ephemeral=True)
         
