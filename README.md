@@ -57,7 +57,7 @@ API_SECRET="some-secret-code"
 | `pigCategoryID`          | 현재 시점에서 활성화되어 있는 피그 카테고리의 ID. |
 | `pigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 피그 카테고리의 ID. |
 | `defaultReason`          | 필요 없음. ''으로 고정. |
-| `previousSemester`       | 직전 학기의 이름(ex. 2025-1, 2025-S). 학기가 바뀐 후 API 통해 수동으로 업데이트 필요. |
+| `previousSemester`       | 직전 학기의 이름(ex. 2025-1, 2025-S). 학기가 바뀐 후 자동 업데이트됨. |
 
 디스코드 UI에서 객체를 우클릭하고 `Copy xxx ID`를 누르면 오브젝트 ID를 얻을 수 있습니다.
 
@@ -67,11 +67,14 @@ API_SECRET="some-secret-code"
 
 ## How to Run
 
-### Discord 내부 시스템
+### 디스코드 서버 세팅
 
 Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy.readthedocs.io/en/stable/discord.html#discord-intro)를 참고하세요.
 
 SCSC 디스코드 서버에서 `dormant`, `newcomer`, `member`, `oldboy`, `executive`, `president`와 같은 6가지 role을 각각의 권한에 맞게 추가합니다.
+`SIG`, `PIG`라는 이름의 카테고리를 생성(이미 없다면)하고 각각의 ID를 복사하여 `data.json`에 삽입합니다.
+`2025-1 SIG Archive`, `2025-1 PIG Archive`와 같은 이름의 카테고리를 생성(이미 없다면, 혹은 이름만 수정)하고 각각의 ID를 복사하여 `data.json`에 삽입합니다.
+`previousSemester`에 지난 학기의 명칭을 기입합니다(ex. `"2025-1"`또는 `"2025-S"`).
 
 ### 실행
 In root directory,
