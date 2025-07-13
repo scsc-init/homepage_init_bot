@@ -26,6 +26,7 @@
   "action_code": 4002,
   "body": {
     "sig_name": "sig_name",
+    "previous_semester": "2025-1"
   }
 }
 ```
@@ -54,6 +55,7 @@
   "action_code": 4004,
   "body": {
     "pig_name": "pig_name",
+    "previous_semester": "2025-1"
   }
 }
 ```

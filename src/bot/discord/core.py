@@ -134,6 +134,7 @@ class SCSCBotConnector:
         self.sigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigArchiveCategoryID"])
         self.pigCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigCategoryID"])
         self.pigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigArchiveCategoryID"])
+        self.previousSemester: str = self.bot.data["previousSemester"]
 
     def bot_on_ready(self):
         """
