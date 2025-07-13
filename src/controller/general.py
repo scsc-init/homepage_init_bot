@@ -7,7 +7,7 @@ async def create_invite(connector: SCSCBotConnector, body: dict):
     return {"invite_url": str(invite)}
 
 async def send_message_by_id(connector: SCSCBotConnector, body: dict):
-    if body['embed']: 
+    if body.get('embed'): 
         embed = discord.Embed(title=body['embed'].get("title"), description=body['embed'].get("description"), color=discord.Color(body['embed'].get("color")))
         for field in body['embed'].get("fields", []):
             embed.add_field(name=field.get("name"), value=field.get("value"),inline=field.get("inline", True))
@@ -16,7 +16,7 @@ async def send_message_by_id(connector: SCSCBotConnector, body: dict):
     connector.send_message(body['channel_id'], body['content'])
     
 async def send_message_by_name(connector: SCSCBotConnector, body: dict):
-    if body['embed']: 
+    if body.get('embed'): 
         embed = discord.Embed(title=body['embed'].get("title"), description=body['embed'].get("description"), color=discord.Color(body['embed'].get("color")))
         for field in body['embed'].get("fields", []):
             embed.add_field(name=field.get("name"), value=field.get("value"),inline=field.get("inline", True))

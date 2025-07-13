@@ -132,6 +132,9 @@ class SCSCBotConnector:
         self.executiveRole: discord.Role = self.mainGuild.get_role(self.bot.data["executiveRoleID"])
         self.sigCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigCategoryID"])
         self.sigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigArchiveCategoryID"])
+        self.pigCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigCategoryID"])
+        self.pigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigArchiveCategoryID"])
+        self.previousSemester: str = self.bot.data["previousSemester"]
 
     def bot_on_ready(self):
         """
@@ -167,7 +170,6 @@ class SCSCBotConnector:
         try:
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
             res = future.result()
-            print(1)
             return res
         except Exception as e:
             print(f"[submit_sync Error] An error occurred: {e}")
@@ -330,7 +332,6 @@ class SCSCBotConnector:
         if identifier is None:
             identifier = self.mainChannel
         res = self.submit_sync(self.get_channel(identifier).create_invite(reason=reason, max_age=max_age, max_uses=max_uses, unique=unique, **kwargs))
-        print(1)
         return res
 
     @log
@@ -570,4 +571,79 @@ class SCSCBotConnector:
         """
         category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
         self.set_data({"sigArchiveCategoryID": category.id})
+        return category
+    
+    @log
+    def create_pig(self, name: str, members: Iterable[MemberIdentifierType]) -> tuple[discord.TextChannel, discord.Role]:
+        """
+        주어진 이름과 구성원 리스트를 기반으로 새로운 PIG를 생성합니다.
+        이는 새로운 텍스트 채널과 역할을 생성하고, 멤버들에게 해당 역할을 부여합니다.
+
+        Args:
+            name (str): PIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
+            members (Iterable[MemberIdentifierType]): PIG에 참여할 멤버들의 식별자 리스트.
+
+        Returns:
+            tuple[discord.TextChannel, discord.Role]: 생성된 텍스트 채널과 역할 객체.
+        """
+        channelName = name.strip().lower().replace(" ", "-")
+        channel = self.create_text_channel(channelName, category_identifier=self.pigCategory)
+        role = self.create_role(name, members)
+        return channel, role
+
+    @log
+    def archive_pig(self, name: str, previous_semester: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]:
+        """
+        특정 PIG를 아카이브 처리하고 관련 채널을 이동시킵니다.
+        PIG 역할의 이름을 변경하고, 채널을 아카이브 카테고리로 이동시킵니다.
+
+        Args:
+            name (str): 아카이브할 PIG의 이름.
+            previous_semester (Optional[str]): 이전 학기 정보. 역할 이름에 추가됩니다.
+                                             제공되지 않으면 `self.previousSemester` 값이 사용됩니다.
+
+        Returns:
+            tuple[discord.TextChannel, discord.Role]: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
+        """
+        channelName = name.strip().lower().replace(" ", "-")
+        channel = self.get_channel(channelName, category_identifier=self.pigCategory)
+        if previous_semester is None:
+            previous_semester = self.previousSemester
+        role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
+        return self.edit_text_channel(channel, category_identifier=self.pigArchiveCategory), role
+
+    @log
+    def update_pig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
+        """
+        PIG 카테고리를 업데이트합니다.
+        필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+
+        Args:
+            identifier (CategoryIdentifierType): PIG 카테고리의 ID, 이름 또는 카테고리 객체.
+            create (bool): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다.
+                           `False`인 경우, 기존 카테고리를 가져옵니다.
+
+        Returns:
+            discord.CategoryChannel: 업데이트되거나 생성된 카테고리 채널 객체.
+        """
+        category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
+        self.set_data({"pigCategoryID": category.id})
+        return category
+
+    @log
+    def update_pig_archive_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
+        """
+        SIG 아카이브 카테고리를 업데이트합니다.
+        필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+
+        Args:
+            identifier (CategoryIdentifierType): PIG 아카이브 카테고리의 ID, 이름 또는 카테고리 객체.
+            create (bool): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다.
+                           `False`인 경우, 기존 카테고리를 가져옵니다.
+
+        Returns:
+            discord.CategoryChannel: 업데이트되거나 생성된 카테고리 채널 객체.
+        """
+        category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
+        self.set_data({"pigArchiveCategoryID": category.id})
         return category

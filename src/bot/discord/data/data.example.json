@@ -1,0 +1,12 @@
+{
+  "guildID": 0,
+  "channelID": 0,
+  "adminRoleID": 0,
+  "executiveRoleID": 0,
+  "sigCategoryID": 0,
+  "sigArchiveCategoryID": 0,
+  "pigCategoryID": 0,
+  "pigArchiveCategoryID": 0,
+  "defaultReason": "from SCSCBot",
+  "previousSemester": ""
+}
