@@ -13,7 +13,8 @@ LOGIN_KEY = "bot:jwt"
 @app.get("/status")
 async def status():
     async with httpx.AsyncClient() as client:
-        res = await client.get(f"http://{get_settings().main_backend_host}:8080/api/user/profile", headers={"x-api-secret": get_settings().api_secret})
+        jwt = r.get(LOGIN_KEY)
+        res = await client.get(f"http://{get_settings().main_backend_host}:8080/api/user/profile", headers={"x-api-secret": get_settings().api_secret, "x-jwt": jwt})
         if res.status_code != 200: return {"logged_in": False}
         else: return {"logged_in": True}
             
