@@ -1,6 +1,11 @@
 # homepage_init_bot
 
-> 최신 개정일: 2025.7.5
+> 최종개정일: 2025-07-21
+
+## 브랜치 설명
+
+- main: 배포된 코드를 저장하며 버전 별로 태그가 붙어 있습니다.
+- develop(default): 개발 중인 코드를 저장합니다.
 
 ## AQMP Request Format (JSON)
 
