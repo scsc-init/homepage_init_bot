@@ -5,7 +5,7 @@ import uvicorn
 from src.utils import consume_rabbitmq
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
-from src.utils import fastapi_app, enroll_user, login
+from src.utils import fastapi_app, enroll_user, login, logout
             
 
 def run_fastapi(): uvicorn.run(fastapi_app, host='0.0.0.0', port=8081)
@@ -15,6 +15,8 @@ async def start_all():
     fastapi_thread.start()
     
     connector = SCSCBotConnector(command_prefix=get_settings().command_prefix, debug=True)
+    logout()
+    print("Bot logged out from backend")
     try:
         await login()
     except Exception as e:
