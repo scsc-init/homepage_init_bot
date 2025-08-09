@@ -19,6 +19,9 @@ RoleIdentifierType = Union[int, str, discord.Role]
 
 NOCHANGE = object()
 
+SLUGDIFF = {
+    " ": "-"
+}
 
 def log(func):
     """
@@ -207,6 +210,17 @@ class SCSCBotConnector:
         with open(self.dataPath, "w", encoding="UTF-8") as f:
             json.dump(self.bot.data, f, indent=2)
         self.update_attributes()
+
+    def slugify(self, text: str) -> str:
+        result = []
+        for char in text:
+            if char.isalpha() or char.isdecimal():
+                result.append(char.lower())
+            elif char in SLUGDIFF:
+                result.append(SLUGDIFF[char])
+            elif not char.isascii():
+                result.append(char)
+        return "".join(result)
 
     def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel:
         """
@@ -511,8 +525,8 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 생성된 텍스트 채널과 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
         channel = self.create_text_channel(channelName, category_identifier=self.sigCategory)
+        channelName = self.slugify(name)
         role = self.create_role(name, members)
         return channel, role
 
@@ -586,8 +600,8 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 생성된 텍스트 채널과 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
         channel = self.create_text_channel(channelName, category_identifier=self.pigCategory)
+        channelName = self.slugify(name)
         role = self.create_role(name, members)
         return channel, role
 
