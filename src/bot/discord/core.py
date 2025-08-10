@@ -211,7 +211,9 @@ class SCSCBotConnector:
             json.dump(self.bot.data, f, indent=2)
         self.update_attributes()
 
-    def slugify(self, text: str) -> str:
+
+    @staticmethod
+    def slugify(text: str) -> str:
         """
         텍스트를 Discord 채널 이름 format에 맞게 변환합니다.
 
