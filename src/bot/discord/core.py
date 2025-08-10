@@ -559,7 +559,7 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
+        channelName = self.slugify(name)
         channel = self.get_channel(channelName, category_identifier=self.sigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
@@ -636,7 +636,7 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
+        channelName = self.slugify(name)
         channel = self.get_channel(channelName, category_identifier=self.pigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
