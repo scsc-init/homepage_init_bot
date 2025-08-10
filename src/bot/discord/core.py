@@ -212,6 +212,15 @@ class SCSCBotConnector:
         self.update_attributes()
 
     def slugify(self, text: str) -> str:
+        """
+        텍스트를 Discord 채널 이름 format에 맞게 변환합니다.
+
+        Args:
+            text (str): 변환할 텍스트.
+
+        Returns:
+            str: 채널 이름 format에 맞게 변환된 텍스트.
+        """
         result = []
         for char in text:
             if char.isalpha() or char.isdecimal():
@@ -600,7 +609,7 @@ class SCSCBotConnector:
         Args:
             name (str): PIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
             members (Iterable[MemberIdentifierType]): PIG에 참여할 멤버들의 식별자 리스트.
-            topic (Optional[str]): SIG의 주제(설명). 채널 주제로 사용됩니다.
+            topic (Optional[str]): PIG의 주제(설명). 채널 주제로 사용됩니다.
 
 
         Returns:
