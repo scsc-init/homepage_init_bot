@@ -2,16 +2,18 @@
 
 ## AQMP Request Format (JSON)
 
-### 시그 생성(id[], name) (채널 생성, 특정인들 역할 생성)
+### 시그 생성(id[], name, description=None) (채널 생성, 특정인들 역할 생성)
 
 #### Main -> Bot
 
+* `sig_description`은 optional입니다.
 ```json
 {
   "action_code": 4001,
   "body": {
     "sig_name": "sig_name",
-    "user_id_list": [12345, 12346]
+    "user_id_list": [12345, 12346],
+    "sig_description": "pig_description"
   }
 }
 ```
@@ -31,7 +33,7 @@
 }
 ```
 
-### 피그 생성(id[], name) (채널 생성, 특정인들 역할 생성)
+### 피그 생성(id[], name, description=None) (채널 생성, 특정인들 역할 생성)
 
 #### Main -> Bot
 
@@ -40,7 +42,8 @@
   "action_code": 4003,
   "body": {
     "pig_name": "pig_name",
-    "user_id_list": [12345, 12346]
+    "user_id_list": [12345, 12346],
+    "pig_description": "pig_description"
   }
 }
 ```
