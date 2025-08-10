@@ -1,6 +1,6 @@
 from src.controller import create_invite, send_message_by_id, send_message_by_name, get_id_from_name
 from src.controller import give_role_to_id, remove_role_from_id, get_ids_from_name, create_role_with_ids
-from src.controller import update_sig_category, update_sig_archive_category, get_category_from_name, create_channel, edit_channel, update_data, update_pig_archive_category, update_pig_category, edit_channel
+from src.controller import update_sig_category, update_sig_archive_category, get_category_from_name, create_channel, edit_channel, update_data, update_pig_archive_category, update_pig_category
 from src.controller import create_sig, archive_sig, create_pig, archive_pig
 
 _ACTION_MAP = {
