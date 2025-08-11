@@ -82,31 +82,35 @@
 ```
 
 
-### 채널 생성 (카테고리 id, 채널 name)
+### 채널 생성 (카테고리 id, 채널 name, 채널 topic)
 
 #### Main -> Bot
 
+* `topic`은 optional입니다.
 ```json
 {
   "action_code": 3006,
   "body": {
     "category_id": 12345,
     "channel_name": "name",
+    "topic": "topic"
   }
 }
 ```
 
-### 채널 이동 (채널 id, 이동할 카테고리, 이동 후 채널 이름)
+### 채널 이동 (채널 id, 이동할 카테고리, 새 채널 name, 새 채널 topic)
 
 #### Main -> Bot
 
+* `category_id_to_move`, `new_channel_name`, `new_topic`은 optional입니다.
 ```json
 {
   "action_code": 3007,
   "body": {
     "channel_id": 12345,
-    "category_to_id": 12345,
+    "category_id_to_move": 12345,
     "new_channel_name": "name",
+    "new_topic": "topic"
   }
 }
 ```

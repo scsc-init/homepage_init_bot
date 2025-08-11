@@ -25,5 +25,5 @@ async def send_message_by_name(connector: SCSCBotConnector, body: dict):
     connector.send_message(body['channel_name'], body['content'])
     
 async def get_id_from_name(connector: SCSCBotConnector, body: dict):
-    channel = connector.get_channel(body['channel_name'])
+    channel = connector.get_channel(connector.slugify(body['channel_name']))
     if channel: return {"channel_id": channel.id}

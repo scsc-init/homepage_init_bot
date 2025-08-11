@@ -19,6 +19,9 @@ RoleIdentifierType = Union[int, str, discord.Role]
 
 NOCHANGE = object()
 
+SLUGDIFF = {
+    " ": "-"
+}
 
 def log(func):
     """
@@ -208,6 +211,28 @@ class SCSCBotConnector:
             json.dump(self.bot.data, f, indent=2)
         self.update_attributes()
 
+
+    @staticmethod
+    def slugify(text: str) -> str:
+        """
+        텍스트를 Discord 채널 이름 format에 맞게 변환합니다.
+
+        Args:
+            text (str): 변환할 텍스트.
+
+        Returns:
+            str: 채널 이름 format에 맞게 변환된 텍스트.
+        """
+        result = []
+        for char in text:
+            if char.isalpha() or char.isdecimal():
+                result.append(char.lower())
+            elif char in SLUGDIFF:
+                result.append(SLUGDIFF[char])
+            elif not char.isascii():
+                result.append(char)
+        return "".join(result)
+
     def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel:
         """
         제공된 식별자를 사용하여 Discord 채널 객체를 가져옵니다.
@@ -364,7 +389,7 @@ class SCSCBotConnector:
         return self.submit_sync(self.mainGuild.create_text_channel(name, reason=reason or self.defaultReason, category=self.get_category(category_identifier), topic=topic))
 
     @log
-    def edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
+    def edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, topic: Optional[str] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
         """
         기존 텍스트 채널의 속성을 편집합니다.
 
@@ -373,6 +398,7 @@ class SCSCBotConnector:
             name (Optional[str]): 채널의 새 이름. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
             category_identifier (Optional[CategoryIdentifierType]): 채널을 이동시킬 새 카테고리의 식별자.
                                                                   변경하지 않으려면 `NOCHANGE`를 사용합니다.
+            topic (Optional[str]): 채널의 새 주제. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
             position (Optional[int]): 채널의 새 위치. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
             reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
         """
@@ -381,6 +407,8 @@ class SCSCBotConnector:
             options["name"] = name
         if not category_identifier == NOCHANGE:
             options["category"] = self.get_category(category_identifier)
+        if not topic == NOCHANGE:
+            options["topic"] = topic
         if not position == NOCHANGE:
             options["position"] = position
         options["reason"] = reason or self.defaultReason
@@ -499,7 +527,7 @@ class SCSCBotConnector:
         return self.add_role(member_identifier=member_identifier, role_identifier=self.executiveRole, reason=reason or self.defaultReason)
 
     @log
-    def create_sig(self, name: str, members: Iterable[MemberIdentifierType]) -> tuple[discord.TextChannel, discord.Role]:
+    def create_sig(self, name: str, members: Iterable[MemberIdentifierType], topic: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]:
         """
         주어진 이름과 구성원 리스트를 기반으로 새로운 SIG를 생성합니다.
         이는 새로운 텍스트 채널과 역할을 생성하고, 멤버들에게 해당 역할을 부여합니다.
@@ -507,12 +535,13 @@ class SCSCBotConnector:
         Args:
             name (str): SIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
             members (Iterable[MemberIdentifierType]): SIG에 참여할 멤버들의 식별자 리스트.
+            topic (Optional[str]): SIG의 주제(설명). 채널 주제로 사용됩니다.
 
         Returns:
             tuple[discord.TextChannel, discord.Role]: 생성된 텍스트 채널과 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
-        channel = self.create_text_channel(channelName, category_identifier=self.sigCategory)
+        channelName = self.slugify(name)
+        channel = self.create_text_channel(channelName, category_identifier=self.sigCategory, topic=topic)
         role = self.create_role(name, members)
         return channel, role
 
@@ -530,7 +559,7 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
+        channelName = self.slugify(name)
         channel = self.get_channel(channelName, category_identifier=self.sigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
@@ -574,7 +603,7 @@ class SCSCBotConnector:
         return category
     
     @log
-    def create_pig(self, name: str, members: Iterable[MemberIdentifierType]) -> tuple[discord.TextChannel, discord.Role]:
+    def create_pig(self, name: str, members: Iterable[MemberIdentifierType], topic: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]:
         """
         주어진 이름과 구성원 리스트를 기반으로 새로운 PIG를 생성합니다.
         이는 새로운 텍스트 채널과 역할을 생성하고, 멤버들에게 해당 역할을 부여합니다.
@@ -582,12 +611,14 @@ class SCSCBotConnector:
         Args:
             name (str): PIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
             members (Iterable[MemberIdentifierType]): PIG에 참여할 멤버들의 식별자 리스트.
+            topic (Optional[str]): PIG의 주제(설명). 채널 주제로 사용됩니다.
+
 
         Returns:
             tuple[discord.TextChannel, discord.Role]: 생성된 텍스트 채널과 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
-        channel = self.create_text_channel(channelName, category_identifier=self.pigCategory)
+        channelName = self.slugify(name)
+        channel = self.create_text_channel(channelName, category_identifier=self.pigCategory, topic=topic)
         role = self.create_role(name, members)
         return channel, role
 
@@ -605,7 +636,7 @@ class SCSCBotConnector:
         Returns:
             tuple[discord.TextChannel, discord.Role]: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
         """
-        channelName = name.strip().lower().replace(" ", "-")
+        channelName = self.slugify(name)
         channel = self.get_channel(channelName, category_identifier=self.pigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
