@@ -13,7 +13,7 @@
   "body": {
     "sig_name": "sig_name",
     "user_id_list": [12345, 12346],
-    "sig_description": "pig_description"
+    "sig_description": "sig_description"
   }
 }
 ```
