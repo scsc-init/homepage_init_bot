@@ -85,6 +85,17 @@
 
 ---
 
+#### `slugify(self, text: str) -> str`
+
+* **설명**: 텍스트를 Discord 채널 이름 format에 맞게 변환합니다.
+ 
+* **매개변수**:
+    * `text` (`str`): 변환할 텍스트. 
+* **반환값**:
+    * `str`: 채널 이름 format에 맞게 변환된 텍스트.
+
+---
+
 #### `get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel`
 
 * **설명**: 제공된 식별자를 사용하여 Discord 채널 객체를 가져옵니다. 식별자는 채널 ID (정수), 채널 이름 (문자열), 또는 기존 채널 객체일 수 있습니다. 카테고리 식별자가 제공되면 해당 카테고리 내에서 채널을 검색합니다.
@@ -188,14 +199,13 @@
 
 ---
 
-#### `edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None)`
-
+#### `edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, topic: Optional[str] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None)`
 * **설명**: 기존 텍스트 채널의 속성을 편집합니다.
 * **매개변수**:
     * `channel_identifier` (`int | str | discord.TextChannel`): 편집할 텍스트 채널의 식별자.
     * `name` (`Optional[str]`): 채널의 새 이름. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
-    * `category_identifier` (`Optional[CategoryIdentifierType]`): 채널을 이동시킬 새 카테고리의 식별자.
-                                                                  변경하지 않으려면 `NOCHANGE`를 사용합니다.
+    * `category_identifier` (`Optional[CategoryIdentifierType]`): 채널을 이동시킬 새 카테고리의 식별자. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
+    * `topic` (`Optional[str]`): 채널의 새 주제. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
     * `position` (`Optional[int]`): 채널의 새 위치. 변경하지 않으려면 `NOCHANGE`를 사용합니다.
     * `reason` (`Optional[str]`): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
 
@@ -272,14 +282,15 @@
 
 ---
 
-#### `create_sig(self, name: str, members: Iterable[MemberIdentifierType]) -> tuple[discord.TextChannel, discord.Role]`
-
+#### `create_sig(self, name: str, members: Iterable[MemberIdentifierType], topic: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]`
 * **설명**: 주어진 이름과 구성원 리스트를 기반으로 새로운 SIG를 생성합니다. 이는 새로운 텍스트 채널과 역할을 생성하고, 멤버들에게 해당 역할을 부여합니다.
 * **매개변수**:
     * `name` (`str`): SIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
     * `members` (`Iterable[MemberIdentifierType]`): SIG에 참여할 멤버들의 식별자 리스트.
+    * `topic` (`Optional[str]`): SIG의 주제(설명). 채널 주제로 사용됩니다.
 * **반환값**:
     * `tuple[discord.TextChannel, discord.Role]`: 생성된 텍스트 채널과 역할 객체.
+
 
 ---
 
@@ -310,6 +321,47 @@
 * **설명**: SIG 아카이브 카테고리를 업데이트합니다. 필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
 * **매개변수**:
     * `identifier` (`CategoryIdentifierType`): SIG 아카이브 카테고리의 ID, 이름 또는 카테고리 객체.
+    * `create` (`bool`): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다. `False`인 경우, 기존 카테고리를 가져옵니다.
+* **반환값**:
+    * `discord.CategoryChannel`: 업데이트되거나 생성된 카테고리 채널 객체.
+
+---
+
+#### `create_pig(self, name: str, members: Iterable[MemberIdentifierType], topic: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]`
+* **설명**: 주어진 이름과 구성원 리스트를 기반으로 새로운 PIG를 생성합니다. 이는 새로운 텍스트 채널과 역할을 생성하고, 멤버들에게 해당 역할을 부여합니다.
+* **매개변수**:
+    * `name` (`str`): PIG의 이름. 채널 이름과 역할 이름으로 사용됩니다.
+    * `members` (`Iterable[MemberIdentifierType]`): PIG에 참여할 멤버들의 식별자 리스트.
+    * `topic` (`Optional[str]`): PIG의 주제(설명). 채널 주제로 사용됩니다.
+* **반환값**:
+    * `tuple[discord.TextChannel, discord.Role]`: 생성된 텍스트 채널과 역할 객체.
+
+---
+
+#### `archive_pig(self, name: str, previous_semester: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]`
+* **설명**: 특정 PIG를 아카이브 처리하고 관련 채널을 이동시킵니다. PIG 역할의 이름을 변경하고, 채널을 아카이브 카테고리로 이동시킵니다.
+* **매개변수**:
+    * `name` (`str`): 아카이브할 PIG의 이름.
+    * `previous_semester` (`Optional[str]`): 이전 학기 정보. 역할 이름에 추가됩니다. 제공되지 않으면 `self.previousSemester` 값이 사용됩니다.
+* **반환값**:
+    * `tuple[discord.TextChannel, discord.Role]`: 이동된 텍스트 채널과 이름이 변경된 역할 객체.
+
+---
+
+#### `update_pig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel`
+* **설명**: PIG 카테고리를 업데이트합니다. 필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+* **매개변수**:
+    * `identifier` (`CategoryIdentifierType`): PIG 카테고리의 ID, 이름 또는 카테고리 객체.
+    * `create` (`bool`): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다. `False`인 경우, 기존 카테고리를 가져옵니다.
+* **반환값**:
+    * `discord.CategoryChannel`: 업데이트되거나 생성된 카테고리 채널 객체.
+
+---
+
+#### `update_pig_archive_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel`
+* **설명**: PIG 아카이브 카테고리를 업데이트합니다. 필요에 따라 새로운 카테고리를 생성하거나 기존 카테고리를 가져와 설정합니다.
+* **매개변수**:
+    * `identifier` (`CategoryIdentifierType`): PIG 아카이브 카테고리의 ID, 이름 또는 카테고리 객체.
     * `create` (`bool`): `True`인 경우, 해당 이름의 카테고리를 새로 생성합니다. `False`인 경우, 기존 카테고리를 가져옵니다.
 * **반환값**:
     * `discord.CategoryChannel`: 업데이트되거나 생성된 카테고리 채널 객체.
