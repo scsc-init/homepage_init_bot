@@ -1,6 +1,6 @@
 # homepage_init_bot
 
-> 최종개정일: 2025-07-21
+> 최종개정일: 2025-08-15
 
 ## 브랜치 설명
 
@@ -57,10 +57,10 @@ API_SECRET="some-secret-code"
 | `channelID`              | 새로운 사용자가 초대될 디스코드 서버의 메인 채널 ID(SCSC 서버의 경우 `chat`) |
 | `adminRoleID`            | 필요 없음. 0으로 고정. |
 | `executiveRoleID`        | 필요 없음. 0으로 고정. |
-| `sigCategoryID`          | 현재 시점에서 활성화되어 있는 시그 카테고리의 ID. |
-| `sigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 시그 카테고리의 ID. 처음에는 0으로 고정. |
-| `pigCategoryID`          | 현재 시점에서 활성화되어 있는 피그 카테고리의 ID. |
-| `pigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 피그 카테고리의 ID. 처음에는 0으로 고정. |
+| `sigCategoryID`          | 현재 시점에서 활성화되어 있는 시그 카테고리의 ID. 서버 세팅 후 ID를 복사해서 직접 입력. |
+| `sigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 시그 카테고리의 ID. 서버 세팅 후 ID를 복사해서 직접 입력. |
+| `pigCategoryID`          | 현재 시점에서 활성화되어 있는 피그 카테고리의 ID. 서버 세팅 후 ID를 복사해서 직접 입력. |
+| `pigArchiveCategoryID`   | 바로 직전 학기에 활성화되어 있던 피그 카테고리의 ID. 서버 세팅 후 ID를 복사해서 직접 입력. |
 | `defaultReason`          | 필요 없음. ''으로 고정. |
 | `previousSemester`       | 직전 학기의 이름(ex. 2025-1, 2025-S). 학기가 바뀐 후 자동 업데이트됨. |
 
@@ -78,6 +78,7 @@ Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy
 
 SCSC 디스코드 서버에서 `dormant`, `newcomer`, `member`, `oldboy`, `executive`, `president`와 같은 6가지 role을 각각의 권한에 맞게 추가합니다.
 `SIG`, `PIG`라는 이름의 카테고리를 생성(이미 없다면)하고 각각의 ID를 복사하여 `data.json`에 삽입합니다.
+SIG Archive, PIG Archive로 사용될 카테고리를 생성(이미 없다면)하고 각각의 ID를 복사하여 `data.json`에 삽입합니다. 카테고리의 이름은 `2025-1 SIG Archive`, `2025-W PIG Archive` 등의 형식으로 하고, case sensitive 입니다.
 `previousSemester`에 지난 학기의 명칭을 기입합니다(ex. `"2025-1"`또는 `"2025-S"`).
 
 ### 실행
