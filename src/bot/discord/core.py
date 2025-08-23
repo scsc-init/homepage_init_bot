@@ -247,7 +247,7 @@ class SCSCBotConnector:
         Returns:
             str: 채널 이름 format에 맞게 변환된 텍스트.
         """
-        return text
+        return text.strip()
 
     def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel:
         """
@@ -630,7 +630,7 @@ class SCSCBotConnector:
         if new_name: # 이름 바꾸기
             channel = self.get_channel(channel_name, category_identifier=self.sigCategory)        
             new_channel_name = self.slugify(new_name)
-            self.edit_role(role_identifier=role_name, name=new_name)
+            self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
             self.edit_text_channel(channel, new_channel_name)
         if new_topic: # 토픽 바꾸기
             channel = self.get_channel(self.slugify(new_name) if new_name else channel_name, category_identifier=self.sigCategory)   
