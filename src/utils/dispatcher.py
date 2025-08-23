@@ -1,7 +1,7 @@
 from src.controller import create_invite, send_message_by_id, send_message_by_name, get_id_from_name
 from src.controller import give_role_to_id, remove_role_from_id, get_ids_from_name, create_role_with_ids
 from src.controller import update_sig_category, update_sig_archive_category, get_category_from_name, create_channel, edit_channel, update_data, update_pig_archive_category, update_pig_category
-from src.controller import create_sig, archive_sig, create_pig, archive_pig
+from src.controller import create_sig, archive_sig, create_pig, archive_pig, edit_sig, edit_pig
 
 _ACTION_MAP = {
     1001: create_invite,
@@ -24,6 +24,8 @@ _ACTION_MAP = {
     4002: archive_sig,
     4003: create_pig,
     4004: archive_pig,
+    4005: edit_sig,
+    4006: edit_pig,
 }
 
 def dispatch(action_code: int):
