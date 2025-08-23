@@ -229,7 +229,7 @@ class SCSCBotConnector:
         # Lowercase
         s = text.lower()
         # Replace any sequence of non-alphanumeric characters with "-"
-        s = re.sub(r'[^a-z0-9가-핳]+', '-', s)
+        s = re.sub(r'[^a-z0-9가-힣]+', '-', s)
         # Remove leading/trailing "-"
         s = s.strip('-')
         # Collapse multiple "-" into one
@@ -378,7 +378,7 @@ class SCSCBotConnector:
     @log
     def send_message(self, identifier: ChannelIdentifierType, content, embed: Optional[discord.Embed] = None, **kwargs):
         """
-        특정 채널에 문자열 메시지를 전송합니다.
+        특정 채널에 문자열 메시지를 전송합니다. 메시지가 2000자를 초과하면 잘라서 전송합니다.
 
         Args:
             identifier (ChannelIdentifierType): 메시지를 전송할 채널의 식별자.
@@ -386,6 +386,9 @@ class SCSCBotConnector:
             embed (Optional[discord.Embed]): 메시지와 함께 전송할 임베드 객체.
             **kwargs: `discord.TextChannel.send` 메서드에 전달될 추가 키워드 인자.
         """
+        MAX_LENGTH = 2000
+        if content and len(content) > MAX_LENGTH:
+            content = content[:MAX_LENGTH - 100] + "..."
         return self.submit_sync(self.get_channel(identifier).send(content, embed=embed, **kwargs))
 
     @log
