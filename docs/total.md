@@ -62,3 +62,33 @@
   }
 }
 ```
+
+### 시그 수정(name) (이름, 채널명, topic)
+
+#### Main -> Bot
+
+```json
+{
+  "action_code": 4005,
+  "body": {
+    "sig_name": "sig_name",
+    "new_sig_name": "new_sig_name",
+    "new_topic": "new_topic"
+  }
+}
+```
+
+### 피그 수정(name) (이름, 채널명, topic)
+
+#### Main -> Bot
+
+```json
+{
+  "action_code": 4006,
+  "body": {
+    "pig_name": "pig_name",
+    "new_pig_name": "new_pig_name",
+    "new_topic": "new_topic"
+  }
+}
+```

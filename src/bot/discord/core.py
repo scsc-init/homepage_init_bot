@@ -11,6 +11,7 @@ from typing import Coroutine, Optional, Any, Iterable, Union
 from types import SimpleNamespace
 from pathlib import Path
 import inspect
+import re
 
 ChannelIdentifierType = Union[int, str, discord.VoiceChannel, discord.StageChannel, discord.ForumChannel, discord.TextChannel, discord.CategoryChannel]
 CategoryIdentifierType = Union[int, str, discord.CategoryChannel]
@@ -171,8 +172,10 @@ class SCSCBotConnector:
         if not asyncio.iscoroutine(coro):
             raise TypeError("submit_sync expects a coroutine")
         try:
+            print(coro)
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
             res = future.result()
+            print(res)
             return res
         except Exception as e:
             print(f"[submit_sync Error] An error occurred: {e}")
@@ -223,15 +226,28 @@ class SCSCBotConnector:
         Returns:
             str: 채널 이름 format에 맞게 변환된 텍스트.
         """
-        result = []
-        for char in text:
-            if char.isalpha() or char.isdecimal():
-                result.append(char.lower())
-            elif char in SLUGDIFF:
-                result.append(SLUGDIFF[char])
-            elif not char.isascii():
-                result.append(char)
-        return "".join(result)
+        # Lowercase
+        s = text.lower()
+        # Replace any sequence of non-alphanumeric characters with "-"
+        s = re.sub(r'[^a-z0-9가-힣]+', '-', s)
+        # Remove leading/trailing "-"
+        s = s.strip('-')
+        # Collapse multiple "-" into one
+        s = re.sub(r'-+', '-', s)
+        return s
+    
+    @staticmethod
+    def role_slugify(text: str) -> str:
+        """
+        역할명을 Discord 역할 이름 format에 맞게 변환합니다.
+
+        Args:
+            text (str): 변환할 텍스트.
+
+        Returns:
+            str: 채널 이름 format에 맞게 변환된 텍스트.
+        """
+        return text.strip()
 
     def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel:
         """
@@ -362,7 +378,7 @@ class SCSCBotConnector:
     @log
     def send_message(self, identifier: ChannelIdentifierType, content, embed: Optional[discord.Embed] = None, **kwargs):
         """
-        특정 채널에 문자열 메시지를 전송합니다.
+        특정 채널에 문자열 메시지를 전송합니다. 메시지가 2000자를 초과하면 잘라서 전송합니다.
 
         Args:
             identifier (ChannelIdentifierType): 메시지를 전송할 채널의 식별자.
@@ -370,6 +386,9 @@ class SCSCBotConnector:
             embed (Optional[discord.Embed]): 메시지와 함께 전송할 임베드 객체.
             **kwargs: `discord.TextChannel.send` 메서드에 전달될 추가 키워드 인자.
         """
+        MAX_LENGTH = 2000
+        if content and len(content) > MAX_LENGTH:
+            content = content[:MAX_LENGTH - 100] + "..."
         return self.submit_sync(self.get_channel(identifier).send(content, embed=embed, **kwargs))
 
     @log
@@ -412,7 +431,33 @@ class SCSCBotConnector:
         if not position == NOCHANGE:
             options["position"] = position
         options["reason"] = reason or self.defaultReason
-        return self.submit_sync(self.get_channel(channel_identifier).edit(**options))
+
+        # Get a fresh channel object
+        if isinstance(channel_identifier, discord.TextChannel):
+            channel_id = channel_identifier.id
+        elif isinstance(channel_identifier, int):
+            channel_id = channel_identifier
+        elif isinstance(channel_identifier, str):
+            ch = self.get_channel(channel_identifier, category_identifier)
+            if not ch:
+                raise ValueError(f"Channel '{channel_identifier}' not found")
+            channel_id = ch.id
+        else:
+            raise TypeError(f"Invalid channel identifier: {channel_identifier}")
+
+        # Try cached channel first
+        channel = self.get_channel(channel_id)
+        if channel is None:
+            # fallback: fetch from Discord API
+            channel = self.submit_sync(self.bot.fetch_channel(channel_id))
+
+        # Run edit coroutine safely
+        try:
+            coro = channel.edit(**options)
+            return self.submit_sync(coro)
+        except Exception as e:
+            print(f"[edit_text_channel] Failed to edit channel {channel_id}: {e}")
+            raise
 
     @log
     def create_category(self, name: str, position: Optional[int] = None, reason: Optional[str] = None) -> discord.CategoryChannel:
@@ -478,6 +523,7 @@ class SCSCBotConnector:
             reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
         """
         role = self.get_role(role_identifier)
+        print(role_identifier, role)
         return self.submit_sync(role.edit(name=name, reason=reason or self.defaultReason))
 
     @log
@@ -565,7 +611,31 @@ class SCSCBotConnector:
             previous_semester = self.previousSemester
         role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
         return self.edit_text_channel(channel, category_identifier=self.sigArchiveCategory), role
+    
+    @log
+    def edit_sig(self, name: str, new_name: Optional[str] = None, new_topic: Optional[str] = None, reason: Optional[str] = None):
+        """
+        특정 SIG를 수정합니다.
+        SIG 채널명을 수정하고 역할명을 수정하거나, 채널 topic을 수정합니다.
 
+        Args:
+            name (str): 수정할 SIG의 이름.
+            new_name (str): 새로운 SIG의 이름.
+            new_topic (str): 새로운 topic 내용.
+
+        Returns:
+        """
+        channel_name = self.slugify(name)
+        role_name = self.role_slugify(name)
+        if new_name: # 이름 바꾸기
+            channel = self.get_channel(channel_name, category_identifier=self.sigCategory)        
+            new_channel_name = self.slugify(new_name)
+            self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
+            self.edit_text_channel(channel, new_channel_name)
+        if new_topic: # 토픽 바꾸기
+            channel = self.get_channel(self.slugify(new_name) if new_name else channel_name, category_identifier=self.sigCategory)   
+            self.edit_text_channel(channel, topic=new_topic)
+            
     @log
     def update_sig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
         """
@@ -642,6 +712,29 @@ class SCSCBotConnector:
             previous_semester = self.previousSemester
         role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
         return self.edit_text_channel(channel, category_identifier=self.pigArchiveCategory), role
+    
+    @log
+    def edit_pig(self, name: str, new_name: Optional[str] = None, new_topic: Optional[str] = None, reason: Optional[str] = None):
+        """
+        특정 PIG를 수정합니다.
+        PIG 채널명을 수정하고 역할명을 수정하거나, 채널 topic을 수정합니다.
+
+        Args:
+            name (str): 수정할 PIG의 이름.
+            new_name (str): 새로운 PIG의 이름.
+            new_topic (str): 새로운 topic 내용.
+
+        Returns:
+        """
+        channel_name = self.slugify(name)
+        role_name = self.role_slugify(name)
+        channel = self.get_channel(channel_name, category_identifier=self.pigCategory)        
+        if new_name: # 이름 바꾸기
+            newChannelName = self.slugify(new_name)
+            self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
+            self.edit_text_channel(channel, newChannelName)
+        if new_topic: # 토픽 바꾸기
+            self.edit_text_channel(channel, topic=new_topic)
 
     @log
     def update_pig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
