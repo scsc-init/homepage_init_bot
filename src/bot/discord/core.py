@@ -178,11 +178,11 @@ class SCSCBotConnector:
         try:
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
             res = future.result()
-            logger.info(f"info_type=submit_sync ; coroutine result: {res}")
+            logger.debug(f"dbg_type=submit_sync ; coroutine result: {type(res).__name__}")
             return res
-        except Exception as e:
-            logger.error(f"err_type=submit_sync ; An error occurred: {e}")
-            raise e
+        except Exception:
+            logger.error(f"err_type=submit_sync ; An error occurred", exc_info=True)
+            raise
 
     @log
     def start(self, token):
@@ -251,7 +251,7 @@ class SCSCBotConnector:
         """
         return text.strip()
 
-    def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None | discord.VoiceChannel | discord.StageChannel | discord.ForumChannel | discord.TextChannel | discord.CategoryChannel:
+    def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None | VoiceChannel | StageChannel | ForumChannel | TextChannel | CategoryChannel:
         """
         제공된 식별자를 사용하여 Discord 채널 객체를 가져옵니다.
         식별자는 채널 ID (정수), 채널 이름 (문자열), 또는 기존 채널 객체일 수 있습니다.
@@ -263,7 +263,7 @@ class SCSCBotConnector:
                                                                   기본값은 NOCHANGE로, 카테고리 필터링을 하지 않습니다.
 
         Returns:
-            None | discord.VoiceChannel | discord.StageChannel | discord.ForumChannel | discord.TextChannel | discord.CategoryChannel:
+            None | VoiceChannel | StageChannel | ForumChannel | TextChannel | CategoryChannel:
                 찾은 채널 객체 또는 찾지 못한 경우 None을 반환합니다.
         """
         match identifier:
@@ -457,8 +457,8 @@ class SCSCBotConnector:
         try:
             coro = channel.edit(**options)
             return self.submit_sync(coro)
-        except Exception as e:
-            logger.error(f"err_type=edit_text_channel ; Failed to edit channel {channel_id}: {e}")
+        except Exception:
+            logger.error(f"err_type=edit_text_channel ; Failed to edit channel {channel_id}", exc_info=True)
             raise
 
     @log
@@ -629,13 +629,15 @@ class SCSCBotConnector:
         """
         channel_name = self.slugify(name)
         role_name = self.role_slugify(name)
+        channel = self.get_channel(channel_name, category_identifier=self.sigCategory)
+        if channel is None:
+            raise ValueError(f"SIG channel '{channel_name}' not found")
+
         if new_name:  # 이름 바꾸기
-            channel = self.get_channel(channel_name, category_identifier=self.sigCategory)
             new_channel_name = self.slugify(new_name)
             self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
             self.edit_text_channel(channel, new_channel_name)
         if new_topic:  # 토픽 바꾸기
-            channel = self.get_channel(self.slugify(new_name) if new_name else channel_name, category_identifier=self.sigCategory)
             self.edit_text_channel(channel, topic=new_topic)
 
     @log
@@ -731,10 +733,13 @@ class SCSCBotConnector:
         channel_name = self.slugify(name)
         role_name = self.role_slugify(name)
         channel = self.get_channel(channel_name, category_identifier=self.pigCategory)
+        if channel is None:
+            raise ValueError(f"SIG channel '{channel_name}' not found")
+
         if new_name:  # 이름 바꾸기
-            newChannelName = self.slugify(new_name)
+            new_channel_name = self.slugify(new_name)
             self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
-            self.edit_text_channel(channel, newChannelName)
+            self.edit_text_channel(channel, new_channel_name)
         if new_topic:  # 토픽 바꾸기
             self.edit_text_channel(channel, topic=new_topic)
 

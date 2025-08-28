@@ -24,8 +24,8 @@ async def start_all():
     logger.info("info_type=start_all ; Bot logged out from backend")
     try:
         await login()
-    except Exception as e:
-        logger.error(f"err_type=start_all ; Login failed with exception: {e}")
+    except Exception:
+        logger.error("err_type=start_all ; Login failed with exception", exc_info=True)
     connector.enroll_event_listeners.append(enroll_user)
     connector.start(get_settings().token)
 

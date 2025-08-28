@@ -20,8 +20,8 @@ async def get_logged_in() -> bool:
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             res = await client.get(f"http://{get_settings().main_backend_host}:8080/api/user/profile", headers={"x-api-secret": get_settings().api_secret, "x-jwt": jwt})
-    except Exception as e:
-        logger.error(f"err_type=get_logged_in ; {e}")
+    except Exception:
+        logger.error("err_type=get_logged_in", exc_info=True)
         return False
     return res.status_code == 200
 
@@ -34,8 +34,12 @@ async def status():
 @app.post("/login", status_code=204)
 async def login():
     if await get_logged_in(): return
-    async with httpx.AsyncClient() as client:
-        res = await client.post(f"http://{get_settings().main_backend_host}:8080/api/user/login", headers={"x-api-secret": get_settings().api_secret}, json={"email": "bot@discord.com"})
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            res = await client.post(f"http://{get_settings().main_backend_host}:8080/api/user/login", headers={"x-api-secret": get_settings().api_secret}, json={"email": "bot@discord.com"})
+    except Exception:
+        logger.error("err_type=login ; err_code=504 ; Login request failed", exc_info=True)
+        raise HTTPException(status_code=504, detail="Login request failed")
 
     if res.status_code == 200:
         token = res.json().get("jwt")

@@ -18,8 +18,8 @@ async def consume_rabbitmq(connector: SCSCBotConnector):
     while connection is None:
         try:
             connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
-        except AMQPConnectionError as e:
-            logger.error(f"err_type=consume_rabbitmq ; [RabbitMQ] Connection failed, retrying in 2 seconds... ({e})")
+        except AMQPConnectionError:
+            logger.error(f"err_type=consume_rabbitmq ; Connection failed, retrying in 2 seconds...", exc_info=True)
             await asyncio.sleep(2)
     channel = await connection.channel()
     queue = await channel.declare_queue(get_settings().discord_receive_queue, durable=True)
@@ -37,7 +37,7 @@ async def consume_rabbitmq(connector: SCSCBotConnector):
                     handler = dispatch(action_code)
                     result = await handler(connector, body)
                     if reply_to:
-                        logger.info(f"info_type=consume_rabbitmq ; {result}")
+                        logger.info(f"info_type=consume_rabbitmq ; correlation_id={correlation_id} ; {result}")
                         await channel.default_exchange.publish(
                             aio_pika.Message(
                                 body=json.dumps({"correlation_id": correlation_id, "result": result}).encode(),
@@ -45,4 +45,4 @@ async def consume_rabbitmq(connector: SCSCBotConnector):
                             ),
                             routing_key=reply_to
                         )
-                except Exception as e: logger.error(f"err_type=consume_rabbitmq ; Error: {e}")
+                except Exception: logger.error(f"err_type=consume_rabbitmq ; correlation_id={correlation_id}", exc_info=True)
