@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
-import redis
+import logging
+
 import httpx
+import redis
+from fastapi import FastAPI, HTTPException
 
 from src.core import get_settings
 
+logger = logging.getLogger("app")
 
 app = FastAPI()
 r = redis.Redis(host="redis", port=6379, decode_responses=True)
@@ -12,12 +15,14 @@ LOGIN_KEY = "bot:jwt"
 
 
 async def get_logged_in() -> bool:
-    jwt = r.get(LOGIN_KEY)
+    jwt: str = r.get(LOGIN_KEY)  # type: ignore
     if not jwt: return False
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             res = await client.get(f"http://{get_settings().main_backend_host}:8080/api/user/profile", headers={"x-api-secret": get_settings().api_secret, "x-jwt": jwt})
-    except Exception: return False
+    except Exception as e:
+        logger.error(f"err_type=get_logged_in ; {e}")
+        return False
     return res.status_code == 200
 
 
@@ -34,9 +39,13 @@ async def login():
 
     if res.status_code == 200:
         token = res.json().get("jwt")
-        if not token: raise HTTPException(status_code=502, detail="Login succeeded but no token was returned")
+        if not token:
+            logger.error("err_type=login ; err_code=502 ; Login succeeded but no token was returned")
+            raise HTTPException(status_code=502, detail="Login succeeded but no token was returned")
         r.set(LOGIN_KEY, token)
-    else: raise HTTPException(400, detail=res.text)
+    else:
+        logger.error("err_type=login ; err_code=400 ; Login failed")
+        raise HTTPException(400, detail=res.text)
 
 
 def logout():

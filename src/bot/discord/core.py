@@ -1,28 +1,34 @@
-from discord import VoiceChannel, StageChannel, ForumChannel, TextChannel, CategoryChannel, Member
+import asyncio
+import inspect
+import json
+import logging
+import re
+import threading
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Coroutine, Iterable, Optional, Union
+
+import discord
+from discord import (CategoryChannel, ForumChannel, Guild, Member, Role,
+                     StageChannel, TextChannel, User, VoiceChannel)
 from discord.abc import GuildChannel
 
 from .bot import DiscordBot
 
-import json
-import discord
-import asyncio
-import threading
-from typing import Coroutine, Optional, Any, Iterable, Union
-from types import SimpleNamespace
-from pathlib import Path
-import inspect
-import re
+logger = logging.getLogger("app")
 
-ChannelIdentifierType = Union[int, str, discord.VoiceChannel, discord.StageChannel, discord.ForumChannel, discord.TextChannel, discord.CategoryChannel]
-CategoryIdentifierType = Union[int, str, discord.CategoryChannel]
-MemberIdentifierType = Union[int, str, discord.User, discord.Member]
-RoleIdentifierType = Union[int, str, discord.Role]
+
+ChannelIdentifierType = Union[int, str, VoiceChannel, StageChannel, ForumChannel, TextChannel, CategoryChannel]
+CategoryIdentifierType = Union[int, str, CategoryChannel]
+MemberIdentifierType = Union[int, str, User, Member]
+RoleIdentifierType = Union[int, str, Role]
 
 NOCHANGE = object()
 
 SLUGDIFF = {
     " ": "-"
 }
+
 
 def log(func):
     """
@@ -47,13 +53,10 @@ def log(func):
                 # bound_args.apply_defaults()  # 기본값이 있는 경우 적용
             except TypeError as e:
                 # 시그니처 바인딩 실패 (예: 인자 개수 불일치)
-                print(f"Error binding arguments for {method_name}: {e}")
                 # Fallback to simple args/kwargs if binding fails
                 arg_strings = [f"{k}={v!r}" for k, v in kwargs.items()]
-                if args:
-                    arg_strings.insert(0, f"args={args!r}")
-                log_message = f"{method_name}({', '.join(arg_strings)}) called: Binding failed"
-                print(log_message)
+                if args: arg_strings.insert(0, f"args={args!r}")
+                logger.error(f"err_type={method_name} ; {method_name}({', '.join(arg_strings)}) called: Binding failed")
                 return func(self, *args, **kwargs)
 
             # 'self' 파라미터는 로깅에서 제외하고 싶으므로, 이를 제외한 인자들만 처리합니다.
@@ -87,11 +90,12 @@ def log(func):
             if arg_strings:
                 log_message += f" with {', '.join(arg_strings)}"
 
-            print(log_message)
+            logger.info(f"info_type={method_name} ; {log_message}")
 
         return func(self, *args, **kwargs)
 
     return wrapper
+
 
 class SCSCBotConnector:
     def __init__(self, bot: Optional[DiscordBot] = None, data_path: Optional[Path] = None, data: Optional[dict] = None, command_prefix: str = "!", debug: bool = False):
@@ -130,14 +134,14 @@ class SCSCBotConnector:
         `self.bot.data`에 설정된 ID를 기반으로 객체를 가져와 할당합니다.
         봇이 준비된 후 호출되어야 합니다.
         """
-        self.mainGuild: discord.Guild = self.bot.get_guild(self.bot.data["guildID"])
-        self.mainChannel: discord.TextChannel = self.mainGuild.get_channel(self.bot.data["channelID"])
-        self.adminRole: discord.Role = self.mainGuild.get_role(self.bot.data["adminRoleID"])
-        self.executiveRole: discord.Role = self.mainGuild.get_role(self.bot.data["executiveRoleID"])
-        self.sigCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigCategoryID"])
-        self.sigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigArchiveCategoryID"])
-        self.pigCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigCategoryID"])
-        self.pigArchiveCategory: discord.CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigArchiveCategoryID"])
+        self.mainGuild: Guild = self.bot.get_guild(self.bot.data["guildID"])
+        self.mainChannel: TextChannel = self.mainGuild.get_channel(self.bot.data["channelID"])
+        self.adminRole: Role = self.mainGuild.get_role(self.bot.data["adminRoleID"])
+        self.executiveRole: Role = self.mainGuild.get_role(self.bot.data["executiveRoleID"])
+        self.sigCategory: CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigCategoryID"])
+        self.sigArchiveCategory: CategoryChannel = self.mainGuild.get_channel(self.bot.data["sigArchiveCategoryID"])
+        self.pigCategory: CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigCategoryID"])
+        self.pigArchiveCategory: CategoryChannel = self.mainGuild.get_channel(self.bot.data["pigArchiveCategoryID"])
         self.previousSemester: str = self.bot.data["previousSemester"]
 
     def bot_on_ready(self):
@@ -172,13 +176,12 @@ class SCSCBotConnector:
         if not asyncio.iscoroutine(coro):
             raise TypeError("submit_sync expects a coroutine")
         try:
-            print(coro)
             future = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
             res = future.result()
-            print(res)
+            logger.info(f"info_type=submit_sync ; coroutine result: {res}")
             return res
         except Exception as e:
-            print(f"[submit_sync Error] An error occurred: {e}")
+            logger.error(f"err_type=submit_sync ; An error occurred: {e}")
             raise e
 
     @log
@@ -214,7 +217,6 @@ class SCSCBotConnector:
             json.dump(self.bot.data, f, indent=2)
         self.update_attributes()
 
-
     @staticmethod
     def slugify(text: str) -> str:
         """
@@ -235,7 +237,7 @@ class SCSCBotConnector:
         # Collapse multiple "-" into one
         s = re.sub(r'-+', '-', s)
         return s
-    
+
     @staticmethod
     def role_slugify(text: str) -> str:
         """
@@ -249,7 +251,7 @@ class SCSCBotConnector:
         """
         return text.strip()
 
-    def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None|discord.VoiceChannel|discord.StageChannel|discord.ForumChannel|discord.TextChannel|discord.CategoryChannel:
+    def get_channel(self, identifier: ChannelIdentifierType, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE) -> None | discord.VoiceChannel | discord.StageChannel | discord.ForumChannel | discord.TextChannel | discord.CategoryChannel:
         """
         제공된 식별자를 사용하여 Discord 채널 객체를 가져옵니다.
         식별자는 채널 ID (정수), 채널 이름 (문자열), 또는 기존 채널 객체일 수 있습니다.
@@ -275,7 +277,7 @@ class SCSCBotConnector:
             case discord.abc.GuildChannel():
                 return identifier
 
-    def get_category(self, identifier: CategoryIdentifierType) -> None|discord.CategoryChannel:
+    def get_category(self, identifier: CategoryIdentifierType) -> None | discord.CategoryChannel:
         """
         제공된 식별자를 사용하여 Discord 카테고리 채널 객체를 가져옵니다.
         식별자는 카테고리 ID (정수), 카테고리 이름 (문자열), 또는 기존 카테고리 객체일 수 있습니다.
@@ -327,7 +329,7 @@ class SCSCBotConnector:
         Returns:
             list[Member]: 검색 조건에 해당하는 멤버 객체들의 리스트.
         """
-        check = lambda a, b: a == b if exact else a in b
+        def check(a, b): return a == b if exact else a in b
         match identifier:
             case str():
                 return [member for member in self.mainGuild.members if check(member.nick, identifier) or check(member.name, identifier)]
@@ -408,7 +410,7 @@ class SCSCBotConnector:
         return self.submit_sync(self.mainGuild.create_text_channel(name, reason=reason or self.defaultReason, category=self.get_category(category_identifier), topic=topic))
 
     @log
-    def edit_text_channel(self, channel_identifier: int|str|discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, topic: Optional[str] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
+    def edit_text_channel(self, channel_identifier: int | str | discord.TextChannel, name: Optional[str] = NOCHANGE, category_identifier: Optional[CategoryIdentifierType] = NOCHANGE, topic: Optional[str] = NOCHANGE, position: Optional[int] = NOCHANGE, reason: Optional[str] = None):
         """
         기존 텍스트 채널의 속성을 편집합니다.
 
@@ -456,7 +458,7 @@ class SCSCBotConnector:
             coro = channel.edit(**options)
             return self.submit_sync(coro)
         except Exception as e:
-            print(f"[edit_text_channel] Failed to edit channel {channel_id}: {e}")
+            logger.error(f"err_type=edit_text_channel ; Failed to edit channel {channel_id}: {e}")
             raise
 
     @log
@@ -523,7 +525,7 @@ class SCSCBotConnector:
             reason (Optional[str]): 감사 로그에 표시될 이유. 기본값은 `self.defaultReason`입니다.
         """
         role = self.get_role(role_identifier)
-        print(role_identifier, role)
+        logger.info(f"info_type=edit_role ; {role_identifier=} ; {role=}")
         return self.submit_sync(role.edit(name=name, reason=reason or self.defaultReason))
 
     @log
@@ -611,7 +613,7 @@ class SCSCBotConnector:
             previous_semester = self.previousSemester
         role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
         return self.edit_text_channel(channel, category_identifier=self.sigArchiveCategory), role
-    
+
     @log
     def edit_sig(self, name: str, new_name: Optional[str] = None, new_topic: Optional[str] = None, reason: Optional[str] = None):
         """
@@ -627,15 +629,15 @@ class SCSCBotConnector:
         """
         channel_name = self.slugify(name)
         role_name = self.role_slugify(name)
-        if new_name: # 이름 바꾸기
-            channel = self.get_channel(channel_name, category_identifier=self.sigCategory)        
+        if new_name:  # 이름 바꾸기
+            channel = self.get_channel(channel_name, category_identifier=self.sigCategory)
             new_channel_name = self.slugify(new_name)
             self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
             self.edit_text_channel(channel, new_channel_name)
-        if new_topic: # 토픽 바꾸기
-            channel = self.get_channel(self.slugify(new_name) if new_name else channel_name, category_identifier=self.sigCategory)   
+        if new_topic:  # 토픽 바꾸기
+            channel = self.get_channel(self.slugify(new_name) if new_name else channel_name, category_identifier=self.sigCategory)
             self.edit_text_channel(channel, topic=new_topic)
-            
+
     @log
     def update_sig_category(self, identifier: CategoryIdentifierType, create: bool = False) -> discord.CategoryChannel:
         """
@@ -671,7 +673,7 @@ class SCSCBotConnector:
         category = self.create_category(name=identifier) if create else self.get_category(identifier=identifier)
         self.set_data({"sigArchiveCategoryID": category.id})
         return category
-    
+
     @log
     def create_pig(self, name: str, members: Iterable[MemberIdentifierType], topic: Optional[str] = None) -> tuple[discord.TextChannel, discord.Role]:
         """
@@ -712,7 +714,7 @@ class SCSCBotConnector:
             previous_semester = self.previousSemester
         role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
         return self.edit_text_channel(channel, category_identifier=self.pigArchiveCategory), role
-    
+
     @log
     def edit_pig(self, name: str, new_name: Optional[str] = None, new_topic: Optional[str] = None, reason: Optional[str] = None):
         """
@@ -728,12 +730,12 @@ class SCSCBotConnector:
         """
         channel_name = self.slugify(name)
         role_name = self.role_slugify(name)
-        channel = self.get_channel(channel_name, category_identifier=self.pigCategory)        
-        if new_name: # 이름 바꾸기
+        channel = self.get_channel(channel_name, category_identifier=self.pigCategory)
+        if new_name:  # 이름 바꾸기
             newChannelName = self.slugify(new_name)
             self.edit_role(role_identifier=role_name, name=self.role_slugify(new_name))
             self.edit_text_channel(channel, newChannelName)
-        if new_topic: # 토픽 바꾸기
+        if new_topic:  # 토픽 바꾸기
             self.edit_text_channel(channel, topic=new_topic)
 
     @log
