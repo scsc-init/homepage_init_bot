@@ -72,6 +72,10 @@ API_SECRET="some-secret-code"
 
 ## How to Run
 
+### `logs/`
+
+- 루트에 `logs/` 폴더를 추가합니다
+
 ### 디스코드 서버 세팅
 
 Discord 봇 생성에 관해서는, [discord.py 공식 문서](https://discordpy.readthedocs.io/en/stable/discord.html#discord-intro)를 참고하세요.
