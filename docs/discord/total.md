@@ -1,6 +1,6 @@
 # total
 
-## AQMP Request Format (JSON)
+## AMQP Request Format (JSON)
 
 ### 시그 생성(id[], name, description=None) (채널 생성, 특정인들 역할 생성)
 
