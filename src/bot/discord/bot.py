@@ -1,15 +1,18 @@
+import asyncio
+import logging
+import pathlib
+from types import SimpleNamespace
+from typing import Iterable, Optional
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-import pathlib
-import json
-from types import SimpleNamespace
-from typing import Optional, Iterable
 
-import asyncio
+logger = logging.getLogger("app")
+
 
 class DiscordBot(commands.Bot):
-    def __init__(self, data: dict = None, connectors: Optional[Iterable] = None, **kwargs):
+    def __init__(self, data: dict | None = None, connectors: Optional[Iterable] = None, **kwargs):
         super().__init__(**kwargs)
         self.data = data
         self.queue = asyncio.Queue()
@@ -20,7 +23,7 @@ class DiscordBot(commands.Bot):
     async def setup_hook(self):
         for path in pathlib.Path("cogs").glob("*.py"):
             await self.load_extension("cogs." + path.stem)
-        
+
         @app_commands.command(name="enroll", description="Enrolls the user to the discord server")
         @app_commands.describe(student_id="학번(ex. 202500001)")
         async def enroll(interaction: discord.Interaction, student_id: int):
@@ -32,12 +35,12 @@ class DiscordBot(commands.Bot):
                         await interaction.response.send_message(f"{res}", ephemeral=True)
             except Exception as e:
                 await interaction.response.send_message(f"Error: {e}", ephemeral=True)
-        
+
         self.tree.add_command(enroll)
         await self.tree.sync()
 
     async def on_ready(self):
-        print(f"Logged in as {self.user.name}({self.user.id})")
+        logger.info(f"info_type=on_ready ; Logged in as {self.user.name}({self.user.id})")
         for connector in self.connectors:
             connector.bot_on_ready()
 
@@ -64,5 +67,3 @@ class DiscordBot(commands.Bot):
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         return await super().start(token, reconnect=reconnect)
-    
-

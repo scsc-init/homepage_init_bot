@@ -1,6 +1,11 @@
 # homepage_init_bot
 
-> 최종개정일: 2025-08-15
+SCSC 홈페이지 봇 서버 문서
+
+> 최초작성일: 2025-06-29  
+> 최신개정일: 2025-09-02
+> 최신개정자: 윤영우
+> 작성자: 이한경, [윤영우 ECE](mailto:dan.yun0821@gmail.com), 황민기
 
 ## 브랜치 설명
 
@@ -71,6 +76,10 @@ API_SECRET="some-secret-code"
 `environment.yml`에서 conda로 환경 설치.
 
 ## How to Run
+
+### `logs/`
+
+- 루트에 `logs/` 폴더를 추가합니다
 
 ### 디스코드 서버 세팅
 
