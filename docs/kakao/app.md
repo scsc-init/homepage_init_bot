@@ -316,7 +316,7 @@ null
 
 ---
 
-## Check for User in Friend (현재 친구 중에 특정인이 있는지 확인하기)
+## Check for User in Friend (친구 중에 특정인이 있는지 확인하기)
 
 ### `check_friend(friend_name: str) -> JSON`
 
