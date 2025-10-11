@@ -5,6 +5,7 @@ import redis
 from fastapi import FastAPI, HTTPException
 
 from src.core import get_settings
+from .helpers import generate_user_hash
 
 logger = logging.getLogger("app")
 
@@ -36,7 +37,7 @@ async def login():
     if await get_logged_in(): return
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            res = await client.post(f"http://{get_settings().main_backend_host}:8080/api/user/login", headers={"x-api-secret": get_settings().api_secret}, json={"email": "bot@discord.com"})
+            res = await client.post(f"http://{get_settings().main_backend_host}:8080/api/user/login", headers={"x-api-secret": get_settings().api_secret}, json={"email": "bot@discord.com", "hashToken": generate_user_hash("bot@discord.com")})
     except Exception:
         logger.error("err_type=login ; err_code=504 ; Login request failed", exc_info=True)
         raise HTTPException(status_code=504, detail="Login request failed")
