@@ -6,7 +6,10 @@ import uvicorn
 
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
-from src.utils import (
+from src.middleware import (
+    HTTPLoggerMiddleware,
+)
+from src.util import (
     LOGGING_CONFIG,
     consume_rabbitmq,
     enroll_user,
@@ -20,6 +23,7 @@ logger = logging.getLogger("app")
 
 
 def run_fastapi():
+    fastapi_app.add_middleware(HTTPLoggerMiddleware)
     uvicorn.run(fastapi_app, host="0.0.0.0", port=8081)
 
 

@@ -7,7 +7,7 @@ from aiormq.exceptions import AMQPConnectionError
 
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
-from src.utils.dispatcher import dispatch
+from src.util.dispatcher import dispatch
 
 logger = logging.getLogger("app")
 
