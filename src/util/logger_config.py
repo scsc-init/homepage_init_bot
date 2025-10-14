@@ -44,6 +44,15 @@ LOGGING_CONFIG = {
             "formatter": "verbose",
             "filters": ["correlation_id"],
         },
+        "file_access": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "logs/http_access.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "filters": ["correlation_id"],
+        },
         "file_app_info": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
@@ -66,6 +75,11 @@ LOGGING_CONFIG = {
     "loggers": {
         "app": {
             "handlers": ["console", "file_app_info", "file_app_error"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "http_access": {
+            "handlers": ["file_access"],
             "level": "INFO",
             "propagate": False,
         },
