@@ -1,8 +1,8 @@
-from contextvars import ContextVar
 import logging
 import time
+from contextvars import ContextVar
 
-request_id_var = ContextVar("request_id", default='')
+request_id_var = ContextVar("request_id", default="")
 
 
 class RequestIdFilter(logging.Filter):
