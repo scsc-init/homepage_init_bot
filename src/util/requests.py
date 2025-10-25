@@ -14,19 +14,23 @@ async def enroll_user(
     discord_user_id: int,
     discord_user_name: str,
 ):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=5.0) as client:
         res = await client.get(
             f"http://{get_settings().main_backend_host}:8080/api/users",
             headers={"x-api-secret": get_settings().api_secret},
             params={"student_id": student_id},
         )
-        if res.status_code != 200 or not res.json():
+        try:
+            data = res.json()
+        except ValueError:
+            raise ValueError("Invalid JSON from backend")
+        if res.status_code != 200 or not data:
             raise ValueError(
                 "Invalid input from user, please check your student id input"
             )
-        user_id = res.json()[0].get("id")
-        user_role = res.json()[0].get("role")
-        user_discord_id = res.json()[0].get("discord_id")
+        user_id = data[0].get("id")
+        user_role = data[0].get("role")
+        user_discord_id = data[0].get("discord_id")
         if user_discord_id:
             raise Exception(f"User with student id {student_id} already enrolled")
         if r.get(LOGIN_KEY) is None:
@@ -41,7 +45,7 @@ async def enroll_user(
         )
         if res.status_code != 204:
             raise Exception(
-                f"User discord id enroll failed with status {res.status_code}:{res.json()}"
+                f"User discord id enroll failed with status {res.status_code}:{res.text}"
             )
         res = await client.get(
             f"http://{get_settings().main_backend_host}:8080/api/role_names",
