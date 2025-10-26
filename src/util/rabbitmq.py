@@ -7,7 +7,7 @@ from aiormq.exceptions import AMQPConnectionError
 
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
-from src.utils.dispatcher import dispatch
+from src.util.dispatcher import dispatch
 
 logger = logging.getLogger("app")
 
@@ -17,12 +17,19 @@ async def consume_rabbitmq(connector: SCSCBotConnector):
     connection = None
     while connection is None:
         try:
-            connection = await aio_pika.connect_robust(f"amqp://guest:guest@{rabbitmq_hostname}/")
+            connection = await aio_pika.connect_robust(
+                f"amqp://guest:guest@{rabbitmq_hostname}/"
+            )
         except AMQPConnectionError:
-            logger.error(f"err_type=consume_rabbitmq ; Connection failed, retrying in 2 seconds...", exc_info=True)
+            logger.error(
+                f"err_type=consume_rabbitmq ; Connection failed, retrying in 2 seconds...",
+                exc_info=True,
+            )
             await asyncio.sleep(2)
     channel = await connection.channel()
-    queue = await channel.declare_queue(get_settings().discord_receive_queue, durable=True)
+    queue = await channel.declare_queue(
+        get_settings().discord_receive_queue, durable=True
+    )
 
     async with queue.iterator() as queue_iter:
         async for message in queue_iter:
@@ -37,12 +44,20 @@ async def consume_rabbitmq(connector: SCSCBotConnector):
                     handler = dispatch(action_code)
                     result = await handler(connector, body)
                     if reply_to:
-                        logger.info(f"info_type=consume_rabbitmq ; correlation_id={correlation_id} ; {result}")
+                        logger.info(
+                            f"info_type=consume_rabbitmq ; correlation_id={correlation_id} ; {result}"
+                        )
                         await channel.default_exchange.publish(
                             aio_pika.Message(
-                                body=json.dumps({"correlation_id": correlation_id, "result": result}).encode(),
-                                correlation_id=correlation_id
+                                body=json.dumps(
+                                    {"correlation_id": correlation_id, "result": result}
+                                ).encode(),
+                                correlation_id=correlation_id,
                             ),
-                            routing_key=reply_to
+                            routing_key=reply_to,
                         )
-                except Exception: logger.error(f"err_type=consume_rabbitmq ; correlation_id={correlation_id}", exc_info=True)
+                except Exception:
+                    logger.error(
+                        f"err_type=consume_rabbitmq ; correlation_id={correlation_id}",
+                        exc_info=True,
+                    )

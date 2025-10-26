@@ -6,20 +6,34 @@ import uvicorn
 
 from src.bot.discord import SCSCBotConnector
 from src.core import get_settings
-from src.utils import LOGGING_CONFIG, consume_rabbitmq, enroll_user, fastapi_app, login, logout
+from src.middleware import (
+    HTTPLoggerMiddleware,
+)
+from src.util import (
+    LOGGING_CONFIG,
+    consume_rabbitmq,
+    enroll_user,
+    fastapi_app,
+    login,
+    logout,
+)
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger("app")
 
 
-def run_fastapi(): uvicorn.run(fastapi_app, host='0.0.0.0', port=8081)
+def run_fastapi():
+    fastapi_app.add_middleware(HTTPLoggerMiddleware)
+    uvicorn.run(fastapi_app, host="0.0.0.0", port=8081)
 
 
 async def start_all():
     fastapi_thread = Thread(target=run_fastapi, daemon=True)
     fastapi_thread.start()
 
-    connector = SCSCBotConnector(command_prefix=get_settings().command_prefix, debug=True)
+    connector = SCSCBotConnector(
+        command_prefix=get_settings().command_prefix, debug=True
+    )
     logout()
     logger.info("info_type=start_all ; Bot logged out from backend")
     try:
