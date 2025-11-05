@@ -1,32 +1,14 @@
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    networks:
-      - app-net
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
   bot:
     build: .
     ports:
       - "127.0.0.1:8081:8081"
-    networks:
-      - app-net
     env_file:
       - .env
-    volumes:
-      - ./:/app/
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-  redis:
-    image: redis:7
-    networks:
-      - app-net
-networks:
-  app-net:
+    entrypoint: bash
+    command: >
+      -c '
+      python main.py;
+      '
+
+    
