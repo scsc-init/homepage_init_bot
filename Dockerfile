@@ -43,5 +43,4 @@ ENV PATH="/python/bin:/app/.venv/bin:$PATH"
 # Use `/app` as the working directory
 WORKDIR /app
 
-USER nonroot
 ENV PYTHONUNBUFFERED=1

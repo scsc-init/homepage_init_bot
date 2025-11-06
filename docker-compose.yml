@@ -10,7 +10,11 @@ services:
     entrypoint: bash
     command: >
       -c '
+      set -e
+      
+      mkdir -p /app/logs;
+      chown -R nonroot:nonroot /app/logs || true;
+      chmod -R u+rwX /app/logs;
+
       python main.py;
       '
-
-    
