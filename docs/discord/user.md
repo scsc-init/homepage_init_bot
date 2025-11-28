@@ -1,6 +1,6 @@
 # user
 
-## AQMP Request Format (JSON)
+## AMQP Request Format (JSON)
 
 ### 특정인(id)에게 역할(name) 부여
 
