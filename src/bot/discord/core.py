@@ -798,7 +798,9 @@ class SCSCBotConnector:
         channel = self.get_channel(channelName, category_identifier=self.sigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
-        role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
+        role = self.edit_role(
+            role_identifier=self.role_slugify(name), name=f"{name}-{previous_semester}"
+        )
         return (
             self.edit_text_channel(
                 channel, category_identifier=self.sigArchiveCategory
@@ -933,7 +935,9 @@ class SCSCBotConnector:
         channel = self.get_channel(channelName, category_identifier=self.pigCategory)
         if previous_semester is None:
             previous_semester = self.previousSemester
-        role = self.edit_role(role_identifier=name, name=f"{name}-{previous_semester}")
+        role = self.edit_role(
+            role_identifier=self.role_slugify(name), name=f"{name}-{previous_semester}"
+        )
         return (
             self.edit_text_channel(
                 channel, category_identifier=self.pigArchiveCategory
@@ -964,7 +968,7 @@ class SCSCBotConnector:
         role_name = self.role_slugify(name)
         channel = self.get_channel(channel_name, category_identifier=self.pigCategory)
         if channel is None:
-            raise ValueError(f"SIG channel '{channel_name}' not found")
+            raise ValueError(f"PIG channel '{channel_name}' not found")
 
         if new_name:  # 이름 바꾸기
             new_channel_name = self.slugify(new_name)
