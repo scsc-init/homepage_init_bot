@@ -18,14 +18,10 @@ check `/docs`
 
 ## .env 파일 형식
 
-.env 파일은 반드시 root에 위치해야 하며 아래 형식으로 작성합니다. 
+.env 파일은 반드시 root에 위치해야 하며 아래 형식으로 작성합니다. 아래 예시 env에 없는 항목은 하드코딩된 기본 값이 설정되어 있습니다. `src.core.config.py`에서 확인할 수 있습니다. env 파일에서 이를 설정하면 기본 값보다 env 파일 값이 우선하여 적용됩니다.
 
 ```env
-RABBITMQ_HOST="rabbitmq"
-MAIN_BACKEND_HOST="backend"
-DISCORD_RECEIVE_QUEUE="discord_bot_queue"
 TOKEN="..."
-COMMAND_PREFIX="!"
 API_SECRET="some-secret-code"
 ```
 
