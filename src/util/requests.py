@@ -15,9 +15,12 @@ async def enroll_user(
     discord_user_name: str,
 ):
     async with httpx.AsyncClient(timeout=5.0) as client:
+        if (jwt := r.get(LOGIN_KEY)) is None:
+            raise Exception("Bot is not logged in")
+        jwt = str(jwt)
         res = await client.get(
-            f"http://{get_settings().main_backend_host}:8080/api/users",
-            headers={"x-api-secret": get_settings().api_secret},
+            f"http://{get_settings().main_backend_host}:8080/api/executive/users",
+            headers={"x-jwt": jwt},
             params={"student_id": student_id},
         )
         try:
@@ -33,14 +36,9 @@ async def enroll_user(
         user_discord_id = data[0].get("discord_id")
         if user_discord_id:
             raise Exception(f"User with student id {student_id} already enrolled")
-        if r.get(LOGIN_KEY) is None:
-            raise Exception("Bot is not logged in")
         res = await client.post(
             f"http://{get_settings().main_backend_host}:8080/api/executive/user/{user_id}",
-            headers={
-                "x-api-secret": get_settings().api_secret,
-                "x-jwt": str(r.get(LOGIN_KEY)),
-            },
+            headers={"x-jwt": jwt},
             json={"discord_id": discord_user_id, "discord_name": discord_user_name},
         )
         if res.status_code != 204:
@@ -49,16 +47,16 @@ async def enroll_user(
             )
         res = await client.get(
             f"http://{get_settings().main_backend_host}:8080/api/role_names",
-            headers={"x-api-secret": get_settings().api_secret},
         )
         user_role = res.json().get("role_names").get(str(user_role))
         try:
-            if connector.get_role(user_role):
-                await connector.get_member(discord_user_id).add_roles(
-                    connector.get_role(user_role)
-                )
-                return "Success!"
-            else:
+            discord_user_role = connector.get_role(user_role)
+            if discord_user_role is None:
                 raise Exception(f"Role {user_role} does not exist")
+            discord_member = connector.get_member(discord_user_id)
+            if discord_member is None:
+                raise Exception(f"Discord user {discord_user_id} does not exist")
+            await discord_member.add_roles(discord_user_role)
+            return "Success!"
         except Exception as e:
             raise Exception(f"User discord id enroll failed with exception: {e}")
