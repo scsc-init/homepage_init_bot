@@ -16,8 +16,8 @@ async def enroll_user(
 ):
     async with httpx.AsyncClient(timeout=5.0) as client:
         res = await client.get(
-            f"http://{get_settings().main_backend_host}:8080/api/users",
-            headers={"x-api-secret": get_settings().api_secret},
+            f"http://{get_settings().main_backend_host}:8080/api/executive/users",
+            headers={"x-jwt": str(r.get(LOGIN_KEY))},
             params={"student_id": student_id},
         )
         try:
@@ -37,10 +37,7 @@ async def enroll_user(
             raise Exception("Bot is not logged in")
         res = await client.post(
             f"http://{get_settings().main_backend_host}:8080/api/executive/user/{user_id}",
-            headers={
-                "x-api-secret": get_settings().api_secret,
-                "x-jwt": str(r.get(LOGIN_KEY)),
-            },
+            headers={"x-jwt": str(r.get(LOGIN_KEY))},
             json={"discord_id": discord_user_id, "discord_name": discord_user_name},
         )
         if res.status_code != 204:
@@ -49,7 +46,6 @@ async def enroll_user(
             )
         res = await client.get(
             f"http://{get_settings().main_backend_host}:8080/api/role_names",
-            headers={"x-api-secret": get_settings().api_secret},
         )
         user_role = res.json().get("role_names").get(str(user_role))
         try:
