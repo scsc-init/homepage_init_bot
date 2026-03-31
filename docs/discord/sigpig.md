@@ -1,6 +1,6 @@
 # sigpig
 
-## AQMP Request Format (JSON)
+## AMQP Request Format (JSON)
 
 ### 시그 카테고리 갱신
 

@@ -1,6 +1,6 @@
 # general
 
-## AQMP Request Format (JSON)
+## AMQP Request Format (JSON)
 
 ### 초대 코드 생성
 
